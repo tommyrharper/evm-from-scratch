@@ -5,12 +5,6 @@ pub struct EvmResult {
     pub success: bool,
 }
 
-// fn concat(a: u8, b: u8) -> U256 {
-//     let hexadecimal_a_b = format!("{:X}{:X}", a, b);
-//     let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
-//     return U256::from(decimal);
-// }
-
 fn concatDecimals(arr: &[u8]) -> U256 {
     let hexadecimal_concat: String = arr
         .iter()
