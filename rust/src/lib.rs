@@ -39,6 +39,19 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
                 stack.push(concat(code[pc], code[pc + 1]));
                 pc += 1;
             }
+            0x63 => {
+                // PUSH4
+                let hexadecimal_a_b = format!(
+                    "{:X}{:X}{:X}{:X}",
+                    code[pc],
+                    code[pc + 1],
+                    code[pc + 2],
+                    code[pc + 3]
+                );
+                let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
+                stack.push(U256::from(decimal));
+                pc += 3;
+            }
             _ => {
                 continue;
             }
