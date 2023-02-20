@@ -61,6 +61,9 @@ impl<'a> Machine<'a> {
                     // STOP
                     break;
                 }
+                0x50 => {
+                    self.stack.pop();
+                }
                 0x60..=0x7F => {
                     // PUSH1 => PUSH32
                     let push_size = opcode - 0x5F;
@@ -90,6 +93,10 @@ impl Stack {
 
     fn push(&mut self, value: U256) {
         self.data.push(value);
+    }
+
+    fn pop(&mut self) -> Option<U256> {
+        self.data.pop()
     }
 
     fn data(&self) -> Vec<U256> {
