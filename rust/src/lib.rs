@@ -25,6 +25,62 @@ fn concatDecimals(arr: &[u8]) -> U256 {
 
 // TODO: impl Stack, impl Machine
 
+struct Machine<'a> {
+    stack: Stack,
+    code: &'a [u8],
+    pc: usize,
+}
+
+impl<'a> Machine<'a> {
+    pub fn new(
+        code: &'a [u8],
+    ) -> Self {
+        Self {
+            stack: Stack::new(),
+            code,
+            pc: 0,
+        }
+    }
+
+    pub fn stack(&self) -> &Vec<U256> {
+        &self.stack.data
+    }
+
+    pub fn opcode(&self) -> u8 {
+        self.code[self.pc]
+    }
+
+    pub fn step(&mut self, steps: usize) {
+        self.pc += steps;
+    }
+
+    pub fn stackPush(&mut self, n: usize) {
+        let start = self.pc;
+        let end = start + n;
+        let bytes = &self.code[start..end];
+        let valToPush = concatDecimals(bytes);
+        self.stack.push(valToPush);
+        self.pc += n - 1;
+    }
+}
+
+struct Stack {
+    data: Vec<U256>
+}
+
+
+impl Stack {
+    pub fn new() -> Self {
+        Self {
+            data: Vec::new()
+        }
+    }
+
+	pub fn push(&mut self, value: U256) {
+		self.data.push(value);
+	}
+}
+
 fn push(code: &[u8], n: usize, position: usize) -> U256 {
     let start = position;
     let end = position + n;
@@ -33,14 +89,11 @@ fn push(code: &[u8], n: usize, position: usize) -> U256 {
 }
 
 pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
-    let mut stack: Vec<U256> = Vec::new();
-    let mut pc = 0;
+    let mut machine: Machine = Machine::new(_code.as_ref());
 
-    let code = _code.as_ref();
-
-    while pc < code.len() {
-        let opcode = code[pc];
-        pc += 1;
+    while machine.pc < machine.code.len() {
+        let opcode = machine.opcode();
+        machine.step(1);
         // println!("-------pc {:?}", pc);
         // println!("-------code {:?}", code);
         // println!("-------opcode {:?}", opcode);
@@ -53,17 +106,15 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
             }
             0x60 => {
                 // PUSH1
-                stack.push(push(code, 1, pc));
+                machine.stackPush(1);
             }
             0x61 => {
                 // PUSH2
-                stack.push(push(code, 2, pc));
-                pc += 1;
+                machine.stackPush(2);
             }
             0x63 => {
                 // PUSH4
-                stack.push(push(code, 4, pc));
-                pc += 3;
+                machine.stackPush(4);
             }
             _ => {
                 continue;
@@ -72,7 +123,7 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
     }
 
     return EvmResult {
-        stack: stack,
+        stack: machine.stack.data,
         success: true,
     };
 }
