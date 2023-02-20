@@ -37,7 +37,7 @@ impl<'a> Machine<'a> {
     }
 
     fn stack(&self) -> Vec<U256> {
-        self.stack.data.to_vec().into_iter().rev().collect()
+        self.stack.data()
     }
 
     fn opcode(&self) -> u8 {
@@ -98,9 +98,9 @@ impl Stack {
         self.data.push(value);
     }
 
-    // fn data(&self) -> Vec<U256> {
-    //     self.data.into_iter().rev().collect()
-    // }
+    fn data(&self) -> Vec<U256> {
+        self.data.to_vec().into_iter().rev().collect()
+    }
 }
 
 pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
