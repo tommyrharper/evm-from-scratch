@@ -5,11 +5,11 @@ pub struct EvmResult {
     pub success: bool,
 }
 
-fn concat(a: u8, b: u8) -> U256 {
-    let hexadecimal_a_b = format!("{:X}{:X}", a, b);
-    let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
-    return U256::from(decimal);
-}
+// fn concat(a: u8, b: u8) -> U256 {
+//     let hexadecimal_a_b = format!("{:X}{:X}", a, b);
+//     let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
+//     return U256::from(decimal);
+// }
 
 fn concatDecimals(arr: &[u8]) -> U256 {
     let hexadecimal_concat: String = arr
@@ -21,6 +21,15 @@ fn concatDecimals(arr: &[u8]) -> U256 {
     let decimal = i64::from_str_radix(&hexadecimal_concat, 16).unwrap();
 
     return U256::from(decimal);
+}
+
+// TODO: impl Stack, impl Machine
+
+fn push(code: &[u8], n: usize, position: usize) -> U256 {
+    let start = position;
+    let end = position + n;
+    let bytes = &code[start..end];
+    return concatDecimals(bytes);
 }
 
 pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
@@ -44,21 +53,16 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
             }
             0x60 => {
                 // PUSH1
-                stack.push(U256::from(code[pc]));
+                stack.push(push(code, 1, pc));
             }
             0x61 => {
                 // PUSH2
-                stack.push(concatDecimals(&[code[pc], code[pc + 1]]));
+                stack.push(push(code, 2, pc));
                 pc += 1;
             }
             0x63 => {
                 // PUSH4
-                stack.push(concatDecimals(&[
-                    code[pc],
-                    code[pc + 1],
-                    code[pc + 2],
-                    code[pc + 3],
-                ]));
+                stack.push(push(code, 4, pc));
                 pc += 3;
             }
             _ => {
