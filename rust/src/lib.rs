@@ -5,13 +5,6 @@ pub struct EvmResult {
     pub success: bool,
 }
 
-// fn concatDecimals(a: u8, b: u8) -> String {
-//     let mut hexa_decimal_a = format!("{:X}", a);
-//     let hexaDecimalB = format!("{:X}", b);
-//     hexa_decimal_a.push_str(&hexaDecimalB);
-//     return hexa_decimal_a;
-// }
-
 fn concat(a: u8, b: u8) -> U256 {
     let hexadecimal_a_b = format!("{:X}{:X}", a, b);
     let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
@@ -44,6 +37,7 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
             0x61 => {
                 // PUSH2
                 stack.push(concat(code[pc], code[pc + 1]));
+                pc += 1;
             }
             _ => {
                 continue;
