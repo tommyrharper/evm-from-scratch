@@ -44,7 +44,8 @@ impl<'a> Machine<'a> {
         self.pc += steps;
     }
 
-    fn stackPush(&mut self, n: usize) {
+    fn pushOntoStack(&mut self) {
+        let n = usize::from(self.code[self.pc - 1] - 0x5F);
         let start = self.pc;
         let end = start + n;
         let bytes = &self.code[start..end];
@@ -59,16 +60,9 @@ impl<'a> Machine<'a> {
             self.step(1);
 
             match opcode {
-                opcodes::STOP => {
-                    break;
-                }
-                opcodes::POP => {
-                    self.stack.pop();
-                }
-                opcodes::POP..=opcodes::PUSH32 => {
-                    let push_size = opcode - 0x5F;
-                    self.stackPush(usize::from(push_size));
-                }
+                opcodes::STOP => break,
+                opcodes::POP => self.stack.pop(),
+                opcodes::POP..=opcodes::PUSH32 => self.pushOntoStack(),
                 _ => {
                     continue;
                 }
@@ -95,8 +89,9 @@ impl Stack {
         self.data.push(value);
     }
 
-    fn pop(&mut self) -> Option<U256> {
-        self.data.pop()
+    fn pop(&mut self) {
+        self.data.pop();
+        return;
     }
 
     fn data(&self) -> Vec<U256> {
