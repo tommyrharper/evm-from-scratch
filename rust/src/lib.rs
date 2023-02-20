@@ -1,3 +1,5 @@
+pub mod opcodes;
+
 use primitive_types::U256;
 
 pub struct EvmResult {
@@ -57,16 +59,13 @@ impl<'a> Machine<'a> {
             self.step(1);
 
             match opcode {
-                0x00 => {
-                    // STOP
+                opcodes::STOP => {
                     break;
                 }
-                0x50 => {
-                    // POP
+                opcodes::POP => {
                     self.stack.pop();
                 }
-                0x60..=0x7F => {
-                    // PUSH1 => PUSH32
+                opcodes::POP..=opcodes::PUSH32 => {
                     let push_size = opcode - 0x5F;
                     self.stackPush(usize::from(push_size));
                 }
