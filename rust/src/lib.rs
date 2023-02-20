@@ -62,6 +62,7 @@ impl<'a> Machine<'a> {
                     break;
                 }
                 0x50 => {
+                    // POP
                     self.stack.pop();
                 }
                 0x60..=0x7F => {
