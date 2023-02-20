@@ -18,17 +18,21 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
         println!("-------code {:?}", code);
         println!("-------opcode {:?}", opcode);
         println!("-------stack {:?}", stack);
-        if opcode == 0x00 {
-            // STOP
-            break;
-        } else if opcode == 0x60 {
-            // PUSH
-            // stack.push(U256::from(0x1));
-            stack.push(U256::from(code[pc]));
-            return EvmResult {
-                stack: stack,
-                success: true,
-            };
+
+        match opcode {
+            0x00 => {
+                break;
+            }
+            0x60 => {
+                stack.push(U256::from(code[pc]));
+                return EvmResult {
+                    stack: stack,
+                    success: true,
+                };
+            },
+            _ => {
+                continue;
+            }
         }
     }
 
