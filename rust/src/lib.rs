@@ -54,9 +54,9 @@ impl<'a> Machine<'a> {
         let start = self.pc;
         let end = start + n;
         let bytes = &self.code[start..end];
-        let valToPush = concatDecimals(bytes);
-        self.stack.push(valToPush);
-        self.pc += n - 1;
+        let val_to_push = concatDecimals(bytes);
+        self.stack.push(val_to_push);
+        self.pc += n;
     }
 
     fn execute(&mut self) -> EvmResult {
@@ -69,17 +69,10 @@ impl<'a> Machine<'a> {
                     // STOP
                     break;
                 }
-                0x60 => {
-                    // PUSH1
-                    self.stackPush(1);
-                }
-                0x61 => {
-                    // PUSH2
-                    self.stackPush(2);
-                }
-                0x63 => {
-                    // PUSH4
-                    self.stackPush(4);
+                0x60..=0x7F => {
+                    // PUSH1 => PUSH32
+                    let push_size = opcode - 0x5F;
+                    self.stackPush(usize::from(push_size));
                 }
                 _ => {
                     continue;
@@ -106,13 +99,6 @@ impl Stack {
     fn push(&mut self, value: U256) {
         self.data.push(value);
     }
-}
-
-fn push(code: &[u8], n: usize, position: usize) -> U256 {
-    let start = position;
-    let end = position + n;
-    let bytes = &code[start..end];
-    return concatDecimals(bytes);
 }
 
 pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
