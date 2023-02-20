@@ -11,6 +11,18 @@ fn concat(a: u8, b: u8) -> U256 {
     return U256::from(decimal);
 }
 
+fn concatDecimals(arr: &[u8]) -> U256 {
+    let hexadecimal_concat: String = arr
+        .iter()
+        .map(|x| format!("{:X}", x))
+        .collect::<Vec<String>>()
+        .join("");
+
+    let decimal = i64::from_str_radix(&hexadecimal_concat, 16).unwrap();
+
+    return U256::from(decimal);
+}
+
 pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
     let mut stack: Vec<U256> = Vec::new();
     let mut pc = 0;
@@ -36,20 +48,17 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
             }
             0x61 => {
                 // PUSH2
-                stack.push(concat(code[pc], code[pc + 1]));
+                stack.push(concatDecimals(&[code[pc], code[pc + 1]]));
                 pc += 1;
             }
             0x63 => {
                 // PUSH4
-                let hexadecimal_a_b = format!(
-                    "{:X}{:X}{:X}{:X}",
+                stack.push(concatDecimals(&[
                     code[pc],
                     code[pc + 1],
                     code[pc + 2],
-                    code[pc + 3]
-                );
-                let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
-                stack.push(U256::from(decimal));
+                    code[pc + 3],
+                ]));
                 pc += 3;
             }
             _ => {
