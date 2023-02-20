@@ -5,16 +5,17 @@ pub struct EvmResult {
     pub success: bool,
 }
 
+// fn concatDecimals(a: u8, b: u8) -> String {
+//     let mut hexa_decimal_a = format!("{:X}", a);
+//     let hexaDecimalB = format!("{:X}", b);
+//     hexa_decimal_a.push_str(&hexaDecimalB);
+//     return hexa_decimal_a;
+// }
+
 fn concat(a: u8, b: u8) -> U256 {
-    let mut owned_string: String = a.to_string();
-    let borrowed_string: &str = &b.to_string();
-
-    owned_string.push_str(borrowed_string);
-    let my_int: u128 = owned_string.parse().unwrap();
-
-    println!("------------ {}", my_int);
-    // return my_int;
-    return U256::from(my_int);
+    let hexadecimal_a_b = format!("{:X}{:X}", a, b);
+    let decimal = i64::from_str_radix(&hexadecimal_a_b, 16).unwrap();
+    return U256::from(decimal);
 }
 
 pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
@@ -42,12 +43,7 @@ pub fn evm(_code: impl AsRef<[u8]>) -> EvmResult {
             }
             0x61 => {
                 // PUSH2
-                let mut a = format!("{:X}", code[pc]);
-                let b = format!("{:X}", code[pc + 1]);
-                a.push_str(&b);
-
-                let z = i64::from_str_radix(&a, 16).unwrap();
-                stack.push(U256::from(z));
+                stack.push(concat(code[pc], code[pc + 1]));
             }
             _ => {
                 continue;
