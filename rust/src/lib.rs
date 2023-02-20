@@ -18,9 +18,7 @@ fn concatDecimals(arr: &[u8]) -> U256 {
         .collect::<Vec<String>>()
         .join("");
 
-    let decimal = i64::from_str_radix(&hexadecimal_concat, 16).unwrap();
-
-    return U256::from(decimal);
+    return U256::from_str_radix(&hexadecimal_concat, 16).unwrap();
 }
 
 struct Machine<'a> {
