@@ -3,7 +3,7 @@ mod stack;
 
 use primitive_types::U256;
 use crate::stack::Stack;
-// use crate::opcodes::Opcodes;
+use crate::opcodes::Opcode;
 
 
 pub struct EvmResult {
@@ -96,13 +96,13 @@ impl<'a> Machine<'a> {
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.opcode() {
-                opcodes::STOP => break,
-                opcodes::ADD => self.add(),
-                opcodes::MUL => self.mul(),
-                opcodes::SUB => self.sub(),
-                opcodes::DIV => self.div(),
-                opcodes::POP => self.popFromStack(),
-                opcodes::PUSH1..=opcodes::PUSH32 => self.pushOntoStack(),
+                Opcode::STOP => break,
+                Opcode::ADD => self.add(),
+                Opcode::MUL => self.mul(),
+                Opcode::SUB => self.sub(),
+                Opcode::DIV => self.div(),
+                Opcode::POP => self.popFromStack(),
+                Opcode::PUSH1..=Opcode::PUSH32 => self.pushOntoStack(),
                 _ => {}
             }
 
