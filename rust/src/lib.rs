@@ -48,7 +48,7 @@ impl<'a> Machine<'a> {
         self.pc += steps;
     }
 
-    fn pushOntoStack(&mut self) {
+    fn push_on_to_stack(&mut self) {
         let n = usize::from(self.opcode() - 0x5F);
         let start = self.pc + 1;
         let end = start + n;
@@ -58,7 +58,7 @@ impl<'a> Machine<'a> {
         self.step(n);
     }
 
-    fn popFromStack(&mut self) {
+    fn pop_from_stack(&mut self) {
         self.stack.pop();
     }
 
@@ -93,6 +93,16 @@ impl<'a> Machine<'a> {
         }
     }
 
+    fn modulus(&mut self) {
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        let res = a.checked_rem(b);
+        match res {
+            Some(result) => self.stack.push(result),
+            None => self.stack.push(U256::from(0)),
+        }
+    }
+
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.opcode() {
@@ -101,8 +111,9 @@ impl<'a> Machine<'a> {
                 Opcode::MUL => self.mul(),
                 Opcode::SUB => self.sub(),
                 Opcode::DIV => self.div(),
-                Opcode::POP => self.popFromStack(),
-                Opcode::PUSH1..=Opcode::PUSH32 => self.pushOntoStack(),
+                Opcode::MOD => self.modulus(),
+                Opcode::POP => self.pop_from_stack(),
+                Opcode::PUSH1..=Opcode::PUSH32 => self.push_on_to_stack(),
                 _ => {}
             }
 
