@@ -121,8 +121,11 @@ impl<'a> Machine<'a> {
         let res_mul = a.full_mul(b);
         let res_modulo = res_mul.checked_rem(c.into());
         match res_modulo {
-            // TODO: remove u128 intermediate step
-            Some(result) => self.stack.push(result.as_u128().into()),
+            Some(result) => self
+                .stack
+                .push(result.try_into().expect(
+                    "c <= U256::MAX, result = res_mul % c, ∴ result <  U256::MAX, ∴ overflow impossible; qed"
+                )),
             None => self.stack.push(U256::from(0)),
         }
     }
