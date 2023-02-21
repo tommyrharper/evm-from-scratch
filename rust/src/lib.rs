@@ -1,6 +1,9 @@
-pub mod opcodes;
+mod opcodes;
+mod stack;
 
 use primitive_types::U256;
+use crate::stack::Stack;
+
 
 pub struct EvmResult {
     pub stack: Vec<U256>,
@@ -109,28 +112,6 @@ impl<'a> Machine<'a> {
             stack: self.stack(),
             success: true,
         };
-    }
-}
-
-struct Stack {
-    data: Vec<U256>,
-}
-
-impl Stack {
-    fn new() -> Self {
-        Self { data: Vec::new() }
-    }
-
-    fn push(&mut self, value: U256) {
-        self.data.push(value);
-    }
-
-    fn pop(&mut self) -> Option<U256> {
-        self.data.pop()
-    }
-
-    fn data(&self) -> Vec<U256> {
-        self.data.to_vec().into_iter().rev().collect()
     }
 }
 
