@@ -51,16 +51,26 @@ impl<'a> Machine<'a> {
         let bytes = &self.code[start..end];
         let val_to_push = concatDecimals(bytes);
         self.stack.push(val_to_push);
-        self.pc += n;
+        self.step(n);
+    }
+
+    fn add(&mut self) {
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        let res = a.overflowing_add(b).0;
+        self.stack.push(res);
     }
 
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
-            let opcode = self.opcode();
-
-            match opcode {
+            match self.opcode() {
                 opcodes::STOP => break,
-                opcodes::POP => self.stack.pop(),
+                opcodes::ADD => {
+                    self.add();
+                }
+                opcodes::POP => {
+                    self.stack.pop();
+                }
                 opcodes::PUSH1..=opcodes::PUSH32 => self.pushOntoStack(),
                 _ => {}
             }
@@ -88,9 +98,8 @@ impl Stack {
         self.data.push(value);
     }
 
-    fn pop(&mut self) {
-        self.data.pop();
-        return;
+    fn pop(&mut self) -> Option<U256> {
+        self.data.pop()
     }
 
     fn data(&self) -> Vec<U256> {
