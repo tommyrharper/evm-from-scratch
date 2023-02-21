@@ -88,7 +88,7 @@ impl<'a> Machine<'a> {
         let res = a.checked_div(b);
         match res {
             Some(result) => self.stack.push(result),
-            None => self.stack.push(U256::from(0)),
+            None => self.stack.push(0.into()),
         }
     }
 
@@ -98,7 +98,7 @@ impl<'a> Machine<'a> {
         let res = a.checked_rem(b);
         match res {
             Some(result) => self.stack.push(result),
-            None => self.stack.push(U256::from(0)),
+            None => self.stack.push(0.into()),
         }
     }
 
@@ -110,7 +110,7 @@ impl<'a> Machine<'a> {
         let res = a.overflowing_add(b).0.checked_rem(c);
         match res {
             Some(result) => self.stack.push(result),
-            None => self.stack.push(U256::from(0)),
+            None => self.stack.push(0.into()),
         }
     }
 
@@ -126,7 +126,7 @@ impl<'a> Machine<'a> {
                 .push(result.try_into().expect(
                     "c <= U256::MAX, result = res_mul % c, ∴ result <  U256::MAX, ∴ overflow impossible; qed"
                 )),
-            None => self.stack.push(U256::from(0)),
+            None => self.stack.push(0.into()),
         }
     }
 
