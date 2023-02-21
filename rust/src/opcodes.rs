@@ -9,6 +9,7 @@ impl Opcode {
     pub const MOD: u8 = 0x06;
     pub const ADDMOD: u8 = 0x08;
     pub const MULMOD: u8 = 0x09;
+    pub const EXP: u8 = 0x0a;
     pub const POP: u8 = 0x50;
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;

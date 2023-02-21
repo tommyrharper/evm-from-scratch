@@ -125,6 +125,13 @@ impl<'a> Machine<'a> {
         }
     }
 
+    fn exp(&mut self) {
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        let res = a.overflowing_pow(b).0;
+        self.stack.push(res);
+    }
+
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.opcode() {
@@ -136,6 +143,7 @@ impl<'a> Machine<'a> {
                 Opcode::MOD => self.modulus(),
                 Opcode::ADDMOD => self.add_modulus(),
                 Opcode::MULMOD => self.mul_modulus(),
+                Opcode::EXP => self.exp(),
                 Opcode::POP => self.pop_from_stack(),
                 Opcode::PUSH1..=Opcode::PUSH32 => self.push_on_to_stack(),
                 _ => {}
