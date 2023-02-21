@@ -3,6 +3,7 @@ mod stack;
 
 use primitive_types::U256;
 use crate::stack::Stack;
+// use crate::opcodes::Opcodes;
 
 
 pub struct EvmResult {
@@ -10,7 +11,7 @@ pub struct EvmResult {
     pub success: bool,
 }
 
-fn concatDecimals(arr: &[u8]) -> U256 {
+fn concat_decimals(arr: &[u8]) -> U256 {
     let hexadecimal_concat: String = arr
         .iter()
         .map(|x| format!("{:X}", x))
@@ -52,7 +53,7 @@ impl<'a> Machine<'a> {
         let start = self.pc + 1;
         let end = start + n;
         let bytes = &self.code[start..end];
-        let val_to_push = concatDecimals(bytes);
+        let val_to_push = concat_decimals(bytes);
         self.stack.push(val_to_push);
         self.step(n);
     }
