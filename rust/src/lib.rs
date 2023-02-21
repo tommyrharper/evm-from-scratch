@@ -72,12 +72,20 @@ impl<'a> Machine<'a> {
         self.stack.push(res);
     }
 
+    fn sub(&mut self) {
+        let a = self.stack.pop().unwrap();
+        let b = self.stack.pop().unwrap();
+        let res = a.overflowing_sub(b).0;
+        self.stack.push(res);
+    }
+
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.opcode() {
                 opcodes::STOP => break,
                 opcodes::ADD => self.add(),
                 opcodes::MUL => self.mul(),
+                opcodes::SUB => self.sub(),
                 opcodes::POP => self.popFromStack(),
                 opcodes::PUSH1..=opcodes::PUSH32 => self.pushOntoStack(),
                 _ => {}
