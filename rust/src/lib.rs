@@ -54,6 +54,10 @@ impl<'a> Machine<'a> {
         self.step(n);
     }
 
+    fn popFromStack(&mut self) {
+        self.stack.pop();
+    }
+
     fn add(&mut self) {
         let a = self.stack.pop().unwrap();
         let b = self.stack.pop().unwrap();
@@ -65,12 +69,8 @@ impl<'a> Machine<'a> {
         while self.pc < self.code.len() {
             match self.opcode() {
                 opcodes::STOP => break,
-                opcodes::ADD => {
-                    self.add();
-                }
-                opcodes::POP => {
-                    self.stack.pop();
-                }
+                opcodes::ADD => self.add(),
+                opcodes::POP => self.popFromStack(),
                 opcodes::PUSH1..=opcodes::PUSH32 => self.pushOntoStack(),
                 _ => {}
             }
