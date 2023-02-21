@@ -83,10 +83,9 @@ impl<'a> Machine<'a> {
         let a = self.stack.pop().unwrap();
         let b = self.stack.pop().unwrap();
         let res = a.checked_div(b);
-        if let Some(result) = res {
-            self.stack.push(result);
-        } else {
-            self.stack.push(U256::from(0));
+        match res {
+            Some(result) => self.stack.push(result),
+            None => self.stack.push(U256::from(0)),
         }
     }
 
