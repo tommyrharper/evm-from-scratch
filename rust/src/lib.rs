@@ -45,8 +45,8 @@ impl<'a> Machine<'a> {
     }
 
     fn pushOntoStack(&mut self) {
-        let n = usize::from(self.code[self.pc - 1] - 0x5F);
-        let start = self.pc;
+        let n = usize::from(self.opcode() - 0x5F);
+        let start = self.pc + 1;
         let end = start + n;
         let bytes = &self.code[start..end];
         let val_to_push = concatDecimals(bytes);
@@ -57,16 +57,15 @@ impl<'a> Machine<'a> {
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             let opcode = self.opcode();
-            self.step(1);
 
             match opcode {
                 opcodes::STOP => break,
                 opcodes::POP => self.stack.pop(),
-                opcodes::POP..=opcodes::PUSH32 => self.pushOntoStack(),
-                _ => {
-                    continue;
-                }
+                opcodes::PUSH1..=opcodes::PUSH32 => self.pushOntoStack(),
+                _ => {}
             }
+
+            self.step(1);
         }
 
         return EvmResult {
