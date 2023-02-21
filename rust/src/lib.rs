@@ -1,10 +1,9 @@
 mod opcodes;
 mod stack;
 
-use primitive_types::U256;
-use crate::stack::Stack;
 use crate::opcodes::Opcode;
-
+use crate::stack::Stack;
+use primitive_types::U256;
 
 pub struct EvmResult {
     pub stack: Vec<U256>,
@@ -107,6 +106,7 @@ impl<'a> Machine<'a> {
         let a = self.stack.pop().unwrap();
         let b = self.stack.pop().unwrap();
         let c = self.stack.pop().unwrap();
+        // TODO: Update to use full_add ???
         let res = a.overflowing_add(b).0.checked_rem(c);
         match res {
             Some(result) => self.stack.push(result),
@@ -118,9 +118,11 @@ impl<'a> Machine<'a> {
         let a = self.stack.pop().unwrap();
         let b = self.stack.pop().unwrap();
         let c = self.stack.pop().unwrap();
-        let res = a.overflowing_mul(b).0.checked_rem(c);
-        match res {
-            Some(result) => self.stack.push(result),
+        let res_mul = a.full_mul(b);
+        let res_modulo = res_mul.checked_rem(c.into());
+        match res_modulo {
+            // TODO: remove u128 intermediate step
+            Some(result) => self.stack.push(result.as_u128().into()),
             None => self.stack.push(U256::from(0)),
         }
     }
