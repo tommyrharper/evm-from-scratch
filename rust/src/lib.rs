@@ -132,7 +132,7 @@ impl<'a> Machine<'a> {
                     self.stack.push(result);
                 }
             },
-            None => self.stack.push(U256::one()),
+            None => self.stack.push(U256::zero()),
         }
     }
 
