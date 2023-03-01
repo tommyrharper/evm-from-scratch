@@ -476,10 +476,24 @@
   },
   {
     "name": "SDIV (zero divided by negative number)",
-    "hint": "Read \"Negative Numbers\" section of the course learning materials. 0 / -2 = -5",
+    "hint": "Read \"Negative Numbers\" section of the course learning materials. 0 / -2 = 0",
     "code": {
-      "asm": "PUSH32 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe\nPUSH1 10\nSDIV",
+      "asm": "PUSH32 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe\nPUSH1 0\nSDIV",
       "bin": "7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe600005"
+    },
+    "expect": {
+      "stack": [
+        "0x0"
+      ],
+      "success": true
+    }
+  },
+  {
+    "name": "SDIV (positive number divided by zero)",
+    "hint": "10 / 0 = 0",
+    "code": {
+      "asm": "PUSH1 0\nPUSH1 10\nSDIV",
+      "bin": "6000600a05"
     },
     "expect": {
       "stack": [
