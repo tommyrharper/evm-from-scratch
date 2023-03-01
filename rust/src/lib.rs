@@ -119,15 +119,19 @@ impl<'a> Machine<'a> {
         let res = a.checked_div(b);
 
         match res {
-            Some(mut result) => {
-                // If only one of the numbers is negative, the result will be negative
-                if a_is_negative ^ b_is_negative {
-                    // We need to perform two's compliment again to provide a negative result
-                    result = !result;
-                    result += U256::one();
+            Some(mut result) => match result {
+                // if the result is 0, push 0 straight onto stack
+                i if i == 0.into() => self.stack.push(i),
+                _ => {
+                    // If only one of the numbers is negative, the result will be negative
+                    if a_is_negative ^ b_is_negative {
+                        // We need to perform two's compliment again to provide a negative result
+                        result = !result;
+                        result += U256::one();
+                    }
+                    self.stack.push(result);
                 }
-                self.stack.push(result);
-            }
+            },
             None => self.stack.push(U256::one()),
         }
     }

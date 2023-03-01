@@ -475,6 +475,20 @@
     }
   },
   {
+    "name": "SDIV (zero divided by negative number)",
+    "hint": "Read \"Negative Numbers\" section of the course learning materials. 0 / -2 = -5",
+    "code": {
+      "asm": "PUSH32 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe\nPUSH1 10\nSDIV",
+      "bin": "7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe600005"
+    },
+    "expect": {
+      "stack": [
+        "0x0"
+      ],
+      "success": true
+    }
+  },
+  {
     "name": "SMOD",
     "hint": "Read \"Negative Numbers\" section of the course learning materials. SMOD works like MOD for \"positive\" numbers",
     "code": {
