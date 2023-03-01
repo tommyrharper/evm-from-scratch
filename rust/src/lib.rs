@@ -20,6 +20,8 @@ fn concat_decimals(arr: &[u8]) -> U256 {
     return U256::from_str_radix(&hexadecimal_concat, 16).unwrap();
 }
 
+// TODO: move functions out of Machine
+
 struct Machine<'a> {
     stack: Stack,
     code: &'a [u8],
@@ -92,6 +94,44 @@ impl<'a> Machine<'a> {
         }
     }
 
+    fn sdiv(&mut self) {
+        let mut a = self.stack.pop().unwrap();
+        let mut b = self.stack.pop().unwrap();
+
+        // If the first bit is 1, then the value is negative, according to the rules of two's compliment
+        let is_a_negative = a.bit(255);
+        let is_b_negative = b.bit(255);
+
+        // If the value is negative, we need to switch it into a positive value
+        if is_a_negative {
+            // We do this by first doing a bitwise negation
+            a = !a;
+            // Then adding one
+            a += U256::one();
+        }
+        // We do this for either of the numbers if they are negative, to find their absolute value
+        if is_b_negative {
+            b = !b;
+            b += U256::one();
+        }
+
+        // now res = |a| / |b|
+        let res = a.checked_div(b);
+
+        match res {
+            Some(mut result) => {
+                // If only one of the numbers is negative, the result will be negative
+                if is_a_negative ^ is_b_negative {
+                    // We need to perform two's compliment again to provide a negative result
+                    result = !result;
+                    result += U256::one();
+                }
+                self.stack.push(result);
+            }
+            None => self.stack.push(U256::one()),
+        }
+    }
+
     fn modulus(&mut self) {
         let a = self.stack.pop().unwrap();
         let b = self.stack.pop().unwrap();
@@ -106,7 +146,6 @@ impl<'a> Machine<'a> {
         let a = self.stack.pop().unwrap();
         let b = self.stack.pop().unwrap();
         let c = self.stack.pop().unwrap();
-        // TODO: Update to use full_add ???
         let res = a.overflowing_add(b).0.checked_rem(c);
         match res {
             Some(result) => self.stack.push(result),
@@ -193,6 +232,7 @@ impl<'a> Machine<'a> {
                 Opcode::MUL => self.mul(),
                 Opcode::SUB => self.sub(),
                 Opcode::DIV => self.div(),
+                Opcode::SDIV => self.sdiv(),
                 Opcode::MOD => self.modulus(),
                 Opcode::ADDMOD => self.add_modulus(),
                 Opcode::MULMOD => self.mul_modulus(),
