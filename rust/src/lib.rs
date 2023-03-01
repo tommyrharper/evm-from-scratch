@@ -137,23 +137,40 @@ impl<'a> Machine<'a> {
         self.stack.push(res);
     }
 
+    // extend a signed integer to 32 bytes
+    // a = num_bytes = the number of bytes of the integer to extend - 1
+    // b = int_to_extend = the integer to extend
+    // e.g.
+    // a = 0, b = 00000001, int_to_extend with bytes => 00000001
+    // a = 1, b = 00000001, int_to_extend with bytes => 0000000000000001
+    // a = 1, b = 11111111, int_to_extend with bytes => 0000000011111111
+    // Full example:
+    // a = 0, b = 11111110, int_to_extend with bytes => 11111110
+    // bit_index = (8 * 0) + 7 = 7
+    // bit = 1
+    // mask  = 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111
+    // !mask = 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000
+    // res = int_to_extend | !mask
+    // = 11111110 | 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000
+    // = 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110
+    // = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE
     fn sign_extend(&mut self) {
-        let bytes_of_int_to_extend = self.stack.pop().unwrap();
+        let num_bytes = self.stack.pop().unwrap();
         let int_to_extend = self.stack.pop().unwrap();
 
-        if bytes_of_int_to_extend >= U256::from(32) {
+        if num_bytes >= U256::from(32) {
             // int is already fully extended, EVM is max 256 bits, 32 bytes = 256 bits
             // ∴ push int_to_extend straight to stack
             self.stack.push(int_to_extend);
         } else {
             // t is the index from left to right of the first bit of the int_to_extend in a 32-byte word
-            // x = bytes_of_int_to_extend
+            // x = num_bytes
             // t = 256 - 8(x + 1)
             // rearrange t to find the index from left to right
             // s = 255 - t = 8(x + 1)
             // where s is the index from left to right of the first bit of the int_to_extend in a 32-byte word
-            // `low_u32` works since bytes_of_int_to_extend < 32
-            let bit_index = (8 * bytes_of_int_to_extend.low_u32() + 7) as usize;
+            // `low_u32` works since num_bytes < 32
+            let bit_index = (8 * num_bytes.low_u32() + 7) as usize;
             // find whether the bit at bit_index is 1 or 0
             let bit = int_to_extend.bit(bit_index);
             // create a mask of 0s up to bit_index and then 1s from then on
