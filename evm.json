@@ -419,6 +419,20 @@
     }
   },
   {
+    "name": "SIGNEXTEND (negative) no. 2",
+    "hint": "Read \"Negative Numbers\" section of the course learning materials. The first bit of 0xFF is 1, so it is a negative number and needs to be padded by 1s in front",
+    "code": {
+      "asm": "PUSH1 0xFE\nPUSH1 0\nSIGNEXTEND",
+      "bin": "60fe60000b"
+    },
+    "expect": {
+      "stack": [
+        "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"
+      ],
+      "success": true
+    }
+  },
+  {
     "name": "SDIV",
     "hint": "Read \"Negative Numbers\" section of the course learning materials. SDIV works like DIV for \"positive\" numbers",
     "code": {
