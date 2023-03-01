@@ -137,6 +137,37 @@ impl<'a> Machine<'a> {
         self.stack.push(res);
     }
 
+    fn sign_extend(&mut self) {
+        let bytes_of_int_to_extend = self.stack.pop().unwrap();
+        let int_to_extend = self.stack.pop().unwrap();
+
+        if bytes_of_int_to_extend >= U256::from(32) {
+            // int is already fully extended, EVM is max 256 bits, 32 bytes = 256 bits
+            // ∴ push int_to_extend straight to stack
+            self.stack.push(int_to_extend);
+        } else {
+            // t is the index from left to right of the first bit of the int_to_extend in a 32-byte word
+            // x = bytes_of_int_to_extend
+            // t = 256 - 8(x + 1)
+            // rearrange t to find the index from left to right
+            // s = 255 - t = 8(x + 1)
+            // where s is the index from left to right of the first bit of the int_to_extend in a 32-byte word
+            // `low_u32` works since bytes_of_int_to_extend < 32
+            let bit_index = (8 * bytes_of_int_to_extend.low_u32() + 7) as usize;
+            // find whether the bit at bit_index is 1 or 0
+            let bit = int_to_extend.bit(bit_index);
+            // create a mask of 0s up to bit_index and then 1s from then on
+            let mask = (U256::one() << bit_index) - U256::one();
+            if bit {
+                // append 1s to int_to_extend
+                self.stack.push(int_to_extend | !mask);
+            } else {
+                // append 0s to int_to_extend
+                self.stack.push(int_to_extend & mask);
+            }
+        }
+    }
+
     fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.opcode() {
@@ -149,6 +180,7 @@ impl<'a> Machine<'a> {
                 Opcode::ADDMOD => self.add_modulus(),
                 Opcode::MULMOD => self.mul_modulus(),
                 Opcode::EXP => self.exp(),
+                Opcode::SIGNEXTEND => self.sign_extend(),
                 Opcode::POP => self.pop_from_stack(),
                 Opcode::PUSH1..=Opcode::PUSH32 => self.push_on_to_stack(),
                 _ => {}
