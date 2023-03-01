@@ -99,18 +99,18 @@ impl<'a> Machine<'a> {
         let mut b = self.stack.pop().unwrap();
 
         // If the first bit is 1, then the value is negative, according to the rules of two's compliment
-        let is_a_negative = a.bit(255);
-        let is_b_negative = b.bit(255);
+        let a_is_negative = a.bit(255);
+        let b_is_negative = b.bit(255);
 
         // If the value is negative, we need to switch it into a positive value
-        if is_a_negative {
+        if a_is_negative {
             // We do this by first doing a bitwise negation
             a = !a;
             // Then adding one
             a += U256::one();
         }
         // We do this for either of the numbers if they are negative, to find their absolute value
-        if is_b_negative {
+        if b_is_negative {
             b = !b;
             b += U256::one();
         }
@@ -121,7 +121,7 @@ impl<'a> Machine<'a> {
         match res {
             Some(mut result) => {
                 // If only one of the numbers is negative, the result will be negative
-                if is_a_negative ^ is_b_negative {
+                if a_is_negative ^ b_is_negative {
                     // We need to perform two's compliment again to provide a negative result
                     result = !result;
                     result += U256::one();
