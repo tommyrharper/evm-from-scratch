@@ -1,7 +1,7 @@
-mod opcodes;
+mod opcode;
 mod stack;
 
-use crate::opcodes::Opcode;
+use crate::opcode::Opcode;
 use crate::stack::Stack;
 use primitive_types::U256;
 
