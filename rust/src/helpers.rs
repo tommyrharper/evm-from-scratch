@@ -17,6 +17,9 @@ pub fn concat_decimals(arr: &[u8]) -> U256 {
 }
 
 pub fn convert_twos_compliment(x: U256) -> U256 {
+    if x == U256::zero() {
+        return x;
+    }
     let mut y = x;
     // We do this by first doing a bitwise negation
     y = !x;
