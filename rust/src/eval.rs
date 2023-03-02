@@ -24,6 +24,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SIGNEXTEND => sign_extend(machine),
         Opcode::LT => lt(machine),
         Opcode::GT => gt(machine),
+        Opcode::SLT => slt(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
@@ -259,6 +260,44 @@ fn gt(machine: &mut Machine) -> ControlFlow {
     let b = machine.stack.pop().unwrap();
     let res = (a > b) as u32;
     machine.stack.push(U256::from(res));
+
+    ControlFlow::Continue(1)
+}
+
+fn slt(machine: &mut Machine) -> ControlFlow {
+    let mut a = machine.stack.pop().unwrap();
+    let mut b = machine.stack.pop().unwrap();
+
+    if a == b {
+        machine.stack.push(U256::zero());
+        return ControlFlow::Continue(1);
+    }
+
+    let a_is_negative = a.bit(255);
+    let b_is_negative = b.bit(255);
+
+    if a_is_negative && !b_is_negative {
+        machine.stack.push(U256::one());
+        return ControlFlow::Continue(1);
+    } else if !a_is_negative && b_is_negative {
+        machine.stack.push(U256::zero());
+        return ControlFlow::Continue(1);
+    }
+
+    if a_is_negative {
+        a = convert_twos_compliment(a);
+    }
+    if b_is_negative {
+        b = convert_twos_compliment(b);
+    }
+
+    let mut res = a < b;
+
+    if a_is_negative && b_is_negative {
+        res = !res;
+    }
+
+    machine.stack.push(U256::from(res as u32));
 
     ControlFlow::Continue(1)
 }

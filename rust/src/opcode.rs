@@ -15,6 +15,8 @@ impl Opcode {
     pub const SIGNEXTEND: u8 = 0x0b;
     pub const LT: u8 = 0x10;
     pub const GT: u8 = 0x11;
+    pub const SLT: u8 = 0x12;
+    pub const SGT: u8 = 0x13;
     pub const POP: u8 = 0x50;
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;
