@@ -23,6 +23,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::EXP => exp(machine),
         Opcode::SIGNEXTEND => sign_extend(machine),
         Opcode::LT => lt(machine),
+        Opcode::GT => gt(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
@@ -248,6 +249,15 @@ fn lt(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = (a < b) as u32;
+    machine.stack.push(U256::from(res));
+
+    ControlFlow::Continue(1)
+}
+
+fn gt(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.pop().unwrap();
+    let b = machine.stack.pop().unwrap();
+    let res = (a > b) as u32;
     machine.stack.push(U256::from(res));
 
     ControlFlow::Continue(1)
