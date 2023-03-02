@@ -28,6 +28,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SGT => sgt(machine),
         Opcode::EQ => eq(machine),
         Opcode::ISZERO => iszero(machine),
+        Opcode::NOT => not(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
@@ -364,6 +365,14 @@ fn iszero(machine: &mut Machine) -> ControlFlow {
     } else {
         machine.stack.push(U256::zero());
     }
+
+    ControlFlow::Continue(1)
+}
+
+fn not(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.pop().unwrap();
+
+    machine.stack.push(!a);
 
     ControlFlow::Continue(1)
 }
