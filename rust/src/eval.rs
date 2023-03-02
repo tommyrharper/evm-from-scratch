@@ -413,71 +413,10 @@ fn shl(machine: &mut Machine) -> ControlFlow {
     let value = machine.stack.pop().unwrap();
 
     let shifted = value << shift;
-    let res = shifted.checked_rem(U256::MAX);
-
-    match res {
-        Some(result) => machine.stack.push(result),
-        None => machine.stack.push(0.into()),
-    }
+    machine.stack.push(shifted);
 
     ControlFlow::Continue(1)
 }
-
-// fn shl(machine: &mut Machine) -> ControlFlow {
-//     let shift = machine.stack.pop().unwrap().full_mul(1.into());
-//     println!("🪵 file \"eval.rs\" ~ line \"413\" ~ token ~ shift = {shift}");
-//     let value = machine.stack.pop().unwrap().full_mul(1.into());
-//     println!("🪵 file \"eval.rs\" ~ line \"415\" ~ token ~ value = {value}");
-
-//     let shifted = (value << shift);
-//     println!("🪵 file \"eval.rs\" ~ line \"416\" ~ token ~ shifted = {shifted}");
-//     let res = shifted.checked_rem(U256::MAX.into());
-//     println!("🪵 file \"eval.rs\" ~ line \"418\" ~ token ~ res = {:?}", res);
-//     println!("🪵 file \"eval.rs\" ~ line \"418\" ~ token ~ U256::MAX = {:?}", U256::MAX);
-
-//     // let res = (a << b).checked_rem(U256::MAX);
-
-//     // match res {
-//     //     Some(result) => machine.stack.push(result),
-//     //     None => machine.stack.push(0.into()),
-//     // }
-//     match res {
-//         Some(result) => machine
-//         .stack
-//         .push(result.try_into().expect(
-//             "result = x % U256::MAX, ∴ result <  U256::MAX, ∴ overflow impossible; qed"
-//         )),
-//         None => machine.stack.push(0.into()),
-//     }
-
-//     ControlFlow::Continue(1)
-// }
-
-// fn shl(machine: &mut Machine) -> ControlFlow {
-//     let shift = machine.stack.pop().unwrap();
-//     let value = machine.stack.pop().unwrap();
-
-//     println!("🪵 file \"eval.rs\" ~ line \"445\" ~ token ~ a = {a}");
-//     println!("🪵 file \"eval.rs\" ~ line \"445\" ~ token ~ b = {b}");
-
-//     if a == U256::zero() {
-//         println!("------------------------ a = 0");
-//         machine.stack.push(U256::zero());
-// 	} else if b >= U256::from(256) {
-//         println!("------------------------ b >= 256");
-// 		let b: u64 = b.as_u64();
-//         println!("🪵 file \"eval.rs\" ~ line \"445\" ~ token ~ b = {b}");
-//         println!("🪵 file \"eval.rs\" ~ line \"445\" ~ token ~ a << b as usize = {:?}", a << b as usize);
-//     } else {
-//         println!("------------------------ else");
-// 		let b: u64 = b.as_u64();
-//         println!("🪵 file \"eval.rs\" ~ line \"445\" ~ token ~ b = {b}");
-//         println!("🪵 file \"eval.rs\" ~ line \"445\" ~ token ~ a << b as usize = {:?}", a << b as usize);
-//         machine.stack.push(a << b as usize);
-// 	}
-
-//     ControlFlow::Continue(1)
-// }
 
 fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.pop();
