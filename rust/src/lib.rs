@@ -1,6 +1,6 @@
 mod opcode;
 mod stack;
-mod test;
+mod eval;
 mod machine;
 
 use crate::machine::Machine;

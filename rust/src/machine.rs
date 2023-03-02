@@ -1,6 +1,6 @@
 use crate::stack::Stack;
-use crate::test::ControlFlow;
-use crate::test::eval_step;
+use crate::eval::ControlFlow;
+use crate::eval::eval;
 use primitive_types::U256;
 
 enum EvmStatus {
@@ -37,7 +37,7 @@ impl<'a> Machine<'a> {
     }
 
     fn step(&mut self) -> Result<EvmStatus, ()> {
-        match eval_step(self) {
+        match eval(self) {
             ControlFlow::Continue(steps) => {
                 self.pc += steps;
                 Ok(EvmStatus::Running)
