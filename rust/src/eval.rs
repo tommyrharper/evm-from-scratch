@@ -26,6 +26,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::GT => gt(machine),
         Opcode::SLT => slt(machine),
         Opcode::SGT => sgt(machine),
+        Opcode::EQ => eq(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
@@ -337,6 +338,19 @@ fn sgt(machine: &mut Machine) -> ControlFlow {
     }
 
     machine.stack.push(U256::from(res as u32));
+
+    ControlFlow::Continue(1)
+}
+
+fn eq(machine: &mut Machine) -> ControlFlow {
+    let mut a = machine.stack.pop().unwrap();
+    let mut b = machine.stack.pop().unwrap();
+
+    if a == b {
+        machine.stack.push(U256::one());
+    } else {
+        machine.stack.push(U256::zero());
+    }
 
     ControlFlow::Continue(1)
 }
