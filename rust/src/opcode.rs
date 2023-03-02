@@ -8,6 +8,7 @@ impl Opcode {
     pub const DIV: u8 = 0x04;
     pub const SDIV: u8 = 0x05;
     pub const MOD: u8 = 0x06;
+    pub const SMOD: u8 = 0x07;
     pub const ADDMOD: u8 = 0x08;
     pub const MULMOD: u8 = 0x09;
     pub const EXP: u8 = 0x0a;

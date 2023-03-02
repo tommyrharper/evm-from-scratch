@@ -1,6 +1,6 @@
-use crate::opcode::Opcode;
-use crate::machine::Machine;
 use crate::helpers::*;
+use crate::machine::Machine;
+use crate::opcode::Opcode;
 use primitive_types::U256;
 
 pub enum ControlFlow {
@@ -86,7 +86,6 @@ pub fn sdiv(machine: &mut Machine) -> ControlFlow {
     // We do this for either of the numbers if they are negative, to find their absolute value
     if b_is_negative {
         b = convert_twos_compliment(b);
-
     }
 
     // now res = |a| / |b|
@@ -124,11 +123,31 @@ pub fn modulus(machine: &mut Machine) -> ControlFlow {
 }
 
 pub fn smodulus(machine: &mut Machine) -> ControlFlow {
-    let a = machine.stack.pop().unwrap();
-    let b = machine.stack.pop().unwrap();
+    let mut a = machine.stack.pop().unwrap();
+    let mut b = machine.stack.pop().unwrap();
+
+    let a_is_negative = a.bit(255);
+    let b_is_negative = b.bit(255);
+
+    if a_is_negative {
+        a = convert_twos_compliment(a);
+    }
+    if b_is_negative {
+        b = convert_twos_compliment(b);
+    }
+
     let res = a.checked_rem(b);
+
     match res {
-        Some(result) => machine.stack.push(result),
+        Some(mut result) => match result {
+            i if i == 0.into() => machine.stack.push(i),
+            _ => {
+                if a_is_negative {
+                    result = convert_twos_compliment(result);
+                }
+                machine.stack.push(result);
+            }
+        },
         None => machine.stack.push(0.into()),
     }
 

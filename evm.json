@@ -518,7 +518,8 @@
   },
   {
     "name": "SMOD (negative)",
-    "hint": "Read \"Negative Numbers\" section of the course learning materials. -10 mod -3 = -1",
+    "todo": "Open PR for changes to the below line",
+    "hint": "Read \"Negative Numbers\" section of the course learning materials. -8 mod -3 = -2",
     "code": {
       "asm": "PUSH32 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd\nPUSH32 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8\nSMOD",
       "bin": "7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff807"
