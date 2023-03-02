@@ -17,8 +17,12 @@ pub fn concat_decimals(arr: &[u8]) -> U256 {
 }
 
 pub fn convert_twos_compliment(x: U256) -> U256 {
+    // Note, normally the twos compliment of 0 is 0
+    // However according to the EVM spec it seems to want this behaviour
+    // I am uncertain if this is a misunderstanding by me/edge case for the SAR opcode
+    // TODO: research this behaviour
     if x == U256::zero() {
-        return x;
+        return !x;
     }
     let mut y = x;
     // We do this by first doing a bitwise negation
