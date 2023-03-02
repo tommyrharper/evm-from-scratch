@@ -24,12 +24,8 @@ pub fn convert_twos_compliment(x: U256) -> U256 {
     if x == U256::zero() {
         return !x;
     }
-    let mut y = x;
-    // We do this by first doing a bitwise negation
-    y = !x;
-    // Then adding one
-    y += U256::one();
-    y
+    // We do this by first doing a bitwise negation then adding one
+    !x + U256::one()
 }
 
 pub fn is_negative(x: U256) -> bool {
