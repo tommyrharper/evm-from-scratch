@@ -431,13 +431,24 @@ fn shr(machine: &mut Machine) -> ControlFlow {
 }
 
 fn sar(machine: &mut Machine) -> ControlFlow {
-    // // shift value is unsigned
-    // let shift = machine.stack.pop().unwrap();
-    // // value is signed
-    // let value = machine.stack.pop().unwrap();
+    // shift value is unsigned
+    let shift = machine.stack.pop().unwrap();
+    // value is signed
+    let mut value = machine.stack.pop().unwrap();
 
-    // let shifted = value >> shift;
-    // machine.stack.push(shifted);
+    let value_is_negative = is_negative(value);
+
+    if value_is_negative {
+        value = convert_twos_compliment(value);
+    }
+
+    let mut shifted = value >> shift;
+
+    if value_is_negative {
+        shifted = convert_twos_compliment(shifted);
+    }
+
+    machine.stack.push(shifted);
 
     ControlFlow::Continue(1)
 }
