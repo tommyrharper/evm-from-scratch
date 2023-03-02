@@ -1,7 +1,12 @@
 use crate::stack::Stack;
 use crate::test::ControlFlow;
-use crate::test::eval_instruction;
+use crate::test::eval_step;
 use primitive_types::U256;
+
+enum EvmStatus {
+    Running,
+    Exited,
+}
 
 pub struct EvmResult {
     pub stack: Vec<U256>,
@@ -31,19 +36,28 @@ impl<'a> Machine<'a> {
         self.code[self.pc]
     }
 
-    fn step(&mut self, steps: usize) {
-        self.pc += steps;
+    fn step(&mut self) -> Result<EvmStatus, ()> {
+        match eval_step(self) {
+            ControlFlow::Continue(steps) => {
+                self.pc += steps;
+                Ok(EvmStatus::Running)
+            }
+            ControlFlow::Exit => Ok(EvmStatus::Exited),
+        }
     }
 
     pub fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
-            match eval_instruction(self) {
-                ControlFlow::Continue(n) => {
-                    self.step(n);
-                    continue;
-                }
-                ControlFlow::Exit => break,
-            }
+            match self.step() {
+				Ok(status) => match status {
+                    EvmStatus::Running => continue,
+                    EvmStatus::Exited => break,
+                },
+				Err(_res) => return EvmResult {
+                    stack: self.stack(),
+                    success: false,
+                },
+			}
         }
 
         return EvmResult {

@@ -7,7 +7,7 @@ pub enum ControlFlow {
     Exit,
 }
 
-pub fn eval_instruction(machine: &mut Machine) -> ControlFlow {
+pub fn eval_step(machine: &mut Machine) -> ControlFlow {
     match machine.opcode() {
         Opcode::STOP => stop(machine),
         Opcode::ADD => add(machine),
