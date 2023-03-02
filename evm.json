@@ -110,6 +110,20 @@
     }
   },
   {
+    "name": "PUSH32 no.2",
+    "hint": "PUSH32 reads the next 32 bytes (256 bits)",
+    "code": {
+      "asm": "PUSH32 0xff00000000000000000000000000000000000000000000000000000000000000",
+      "bin": "7fff00000000000000000000000000000000000000000000000000000000000000"
+    },
+    "expect": {
+      "stack": [
+        "0xff00000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "success": true
+    }
+  },
+  {
     "name": "PUSH (twice)",
     "hint": "Note the order of items on the stack. The tests expect the top of the stack to be the first element",
     "code": {
