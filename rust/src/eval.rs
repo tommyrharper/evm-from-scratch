@@ -30,6 +30,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::ISZERO => iszero(machine),
         Opcode::AND => and(machine),
         Opcode::OR => or(machine),
+        Opcode::XOR => xor(machine),
         Opcode::NOT => not(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
@@ -393,6 +394,15 @@ fn or(machine: &mut Machine) -> ControlFlow {
     let b = machine.stack.pop().unwrap();
 
     machine.stack.push(a | b);
+
+    ControlFlow::Continue(1)
+}
+
+fn xor(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.pop().unwrap();
+    let b = machine.stack.pop().unwrap();
+
+    machine.stack.push(a ^ b);
 
     ControlFlow::Continue(1)
 }

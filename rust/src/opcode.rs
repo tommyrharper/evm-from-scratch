@@ -21,6 +21,7 @@ impl Opcode {
     pub const ISZERO: u8 = 0x15;
     pub const AND: u8 = 0x16;
     pub const OR: u8 = 0x17;
+    pub const XOR: u8 = 0x18;
     pub const NOT: u8 = 0x19;
     pub const POP: u8 = 0x50;
     pub const PUSH1: u8 = 0x60;
