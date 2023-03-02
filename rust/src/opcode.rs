@@ -18,6 +18,7 @@ impl Opcode {
     pub const SLT: u8 = 0x12;
     pub const SGT: u8 = 0x13;
     pub const EQ: u8 = 0x14;
+    pub const ISZERO: u8 = 0x15;
     pub const POP: u8 = 0x50;
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;
