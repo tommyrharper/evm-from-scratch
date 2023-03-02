@@ -22,17 +22,18 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::MULMOD => mul_modulus(machine),
         Opcode::EXP => exp(machine),
         Opcode::SIGNEXTEND => sign_extend(machine),
+        Opcode::LT => lt(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
     }
 }
 
-pub fn stop(_machine: &mut Machine) -> ControlFlow {
+fn stop(_machine: &mut Machine) -> ControlFlow {
     ControlFlow::Exit
 }
 
-pub fn add(machine: &mut Machine) -> ControlFlow {
+fn add(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.overflowing_add(b).0;
@@ -41,7 +42,7 @@ pub fn add(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn mul(machine: &mut Machine) -> ControlFlow {
+fn mul(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.overflowing_mul(b).0;
@@ -50,7 +51,7 @@ pub fn mul(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn sub(machine: &mut Machine) -> ControlFlow {
+fn sub(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.overflowing_sub(b).0;
@@ -59,7 +60,7 @@ pub fn sub(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn div(machine: &mut Machine) -> ControlFlow {
+fn div(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.checked_div(b);
@@ -71,7 +72,7 @@ pub fn div(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn sdiv(machine: &mut Machine) -> ControlFlow {
+fn sdiv(machine: &mut Machine) -> ControlFlow {
     let mut a = machine.stack.pop().unwrap();
     let mut b = machine.stack.pop().unwrap();
 
@@ -110,7 +111,7 @@ pub fn sdiv(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn modulus(machine: &mut Machine) -> ControlFlow {
+fn modulus(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.checked_rem(b);
@@ -122,7 +123,7 @@ pub fn modulus(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn smodulus(machine: &mut Machine) -> ControlFlow {
+fn smodulus(machine: &mut Machine) -> ControlFlow {
     let mut a = machine.stack.pop().unwrap();
     let mut b = machine.stack.pop().unwrap();
 
@@ -154,7 +155,7 @@ pub fn smodulus(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn add_modulus(machine: &mut Machine) -> ControlFlow {
+fn add_modulus(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let c = machine.stack.pop().unwrap();
@@ -167,7 +168,7 @@ pub fn add_modulus(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn mul_modulus(machine: &mut Machine) -> ControlFlow {
+fn mul_modulus(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let c = machine.stack.pop().unwrap();
@@ -185,7 +186,7 @@ pub fn mul_modulus(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn exp(machine: &mut Machine) -> ControlFlow {
+fn exp(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.overflowing_pow(b).0;
@@ -211,7 +212,7 @@ pub fn exp(machine: &mut Machine) -> ControlFlow {
 // = 11111110 | 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000
 // = 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110
 // = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE
-pub fn sign_extend(machine: &mut Machine) -> ControlFlow {
+fn sign_extend(machine: &mut Machine) -> ControlFlow {
     let num_bytes = machine.stack.pop().unwrap();
     let int_to_extend = machine.stack.pop().unwrap();
 
@@ -243,13 +244,22 @@ pub fn sign_extend(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-pub fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
+fn lt(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.pop().unwrap();
+    let b = machine.stack.pop().unwrap();
+    let res = (a < b) as u32;
+    machine.stack.push(U256::from(res));
+
+    ControlFlow::Continue(1)
+}
+
+fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.pop();
 
     ControlFlow::Continue(1)
 }
 
-pub fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
+fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
     let n = usize::from(machine.opcode() - 0x5F);
     let start = machine.pc + 1;
     let end = start + n;
