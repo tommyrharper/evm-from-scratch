@@ -33,6 +33,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::XOR => xor(machine),
         Opcode::NOT => not(machine),
         Opcode::SHL => shl(machine),
+        Opcode::SHR => shr(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
@@ -413,6 +414,16 @@ fn shl(machine: &mut Machine) -> ControlFlow {
     let value = machine.stack.pop().unwrap();
 
     let shifted = value << shift;
+    machine.stack.push(shifted);
+
+    ControlFlow::Continue(1)
+}
+
+fn shr(machine: &mut Machine) -> ControlFlow {
+    let shift = machine.stack.pop().unwrap();
+    let value = machine.stack.pop().unwrap();
+
+    let shifted = value >> shift;
     machine.stack.push(shifted);
 
     ControlFlow::Continue(1)
