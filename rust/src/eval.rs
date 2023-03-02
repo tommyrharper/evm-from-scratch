@@ -34,6 +34,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::NOT => not(machine),
         Opcode::SHL => shl(machine),
         Opcode::SHR => shr(machine),
+        Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         _ => ControlFlow::Continue(1),
@@ -88,8 +89,8 @@ fn sdiv(machine: &mut Machine) -> ControlFlow {
     let mut b = machine.stack.pop().unwrap();
 
     // If the first bit is 1, then the value is negative, according to the rules of two's compliment
-    let a_is_negative = a.bit(255);
-    let b_is_negative = b.bit(255);
+    let a_is_negative = is_negative(a);
+    let b_is_negative = is_negative(b);
 
     // If the value is negative, we need to switch it into a positive value
     if a_is_negative {
@@ -138,8 +139,8 @@ fn smodulus(machine: &mut Machine) -> ControlFlow {
     let mut a = machine.stack.pop().unwrap();
     let mut b = machine.stack.pop().unwrap();
 
-    let a_is_negative = a.bit(255);
-    let b_is_negative = b.bit(255);
+    let a_is_negative = is_negative(a);
+    let b_is_negative = is_negative(b);
 
     if a_is_negative {
         a = convert_twos_compliment(a);
@@ -282,8 +283,8 @@ fn slt(machine: &mut Machine) -> ControlFlow {
         return ControlFlow::Continue(1);
     }
 
-    let a_is_negative = a.bit(255);
-    let b_is_negative = b.bit(255);
+    let a_is_negative = is_negative(a);
+    let b_is_negative = is_negative(b);
 
     if a_is_negative && !b_is_negative {
         machine.stack.push(U256::one());
@@ -320,8 +321,8 @@ fn sgt(machine: &mut Machine) -> ControlFlow {
         return ControlFlow::Continue(1);
     }
 
-    let a_is_negative = a.bit(255);
-    let b_is_negative = b.bit(255);
+    let a_is_negative = is_negative(a);
+    let b_is_negative = is_negative(b);
 
     if a_is_negative && !b_is_negative {
         machine.stack.push(U256::zero());
@@ -425,6 +426,18 @@ fn shr(machine: &mut Machine) -> ControlFlow {
 
     let shifted = value >> shift;
     machine.stack.push(shifted);
+
+    ControlFlow::Continue(1)
+}
+
+fn sar(machine: &mut Machine) -> ControlFlow {
+    // // shift value is unsigned
+    // let shift = machine.stack.pop().unwrap();
+    // // value is signed
+    // let value = machine.stack.pop().unwrap();
+
+    // let shifted = value >> shift;
+    // machine.stack.push(shifted);
 
     ControlFlow::Continue(1)
 }

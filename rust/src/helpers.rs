@@ -24,3 +24,9 @@ pub fn convert_twos_compliment(x: U256) -> U256 {
     y += U256::one();
     y
 }
+
+pub fn is_negative(x: U256) -> bool {
+    // check the first bit, if it is 1, it is negative
+    // according to the rules of twos_compliment
+    x.bit(255)
+}
