@@ -2,6 +2,7 @@ mod opcode;
 mod stack;
 mod eval;
 mod machine;
+mod helpers;
 
 use crate::machine::Machine;
 use crate::machine::EvmResult;

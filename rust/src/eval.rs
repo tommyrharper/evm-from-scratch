@@ -1,5 +1,6 @@
 use crate::opcode::Opcode;
-use crate::Machine;
+use crate::machine::Machine;
+use crate::helpers::*;
 use primitive_types::U256;
 
 pub enum ControlFlow {
@@ -16,6 +17,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::DIV => div(machine),
         Opcode::SDIV => sdiv(machine),
         Opcode::MOD => modulus(machine),
+        Opcode::SMOD => smodulus(machine),
         Opcode::ADDMOD => add_modulus(machine),
         Opcode::MULMOD => mul_modulus(machine),
         Opcode::EXP => exp(machine),
@@ -79,15 +81,12 @@ pub fn sdiv(machine: &mut Machine) -> ControlFlow {
 
     // If the value is negative, we need to switch it into a positive value
     if a_is_negative {
-        // We do this by first doing a bitwise negation
-        a = !a;
-        // Then adding one
-        a += U256::one();
+        a = convert_twos_compliment(a);
     }
     // We do this for either of the numbers if they are negative, to find their absolute value
     if b_is_negative {
-        b = !b;
-        b += U256::one();
+        b = convert_twos_compliment(b);
+
     }
 
     // now res = |a| / |b|
@@ -101,8 +100,7 @@ pub fn sdiv(machine: &mut Machine) -> ControlFlow {
                 // If only one of the numbers is negative, the result will be negative
                 if a_is_negative ^ b_is_negative {
                     // We need to perform two's compliment again to provide a negative result
-                    result = !result;
-                    result += U256::one();
+                    result = convert_twos_compliment(result);
                 }
                 machine.stack.push(result);
             }
@@ -114,6 +112,18 @@ pub fn sdiv(machine: &mut Machine) -> ControlFlow {
 }
 
 pub fn modulus(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.pop().unwrap();
+    let b = machine.stack.pop().unwrap();
+    let res = a.checked_rem(b);
+    match res {
+        Some(result) => machine.stack.push(result),
+        None => machine.stack.push(0.into()),
+    }
+
+    ControlFlow::Continue(1)
+}
+
+pub fn smodulus(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     let b = machine.stack.pop().unwrap();
     let res = a.checked_rem(b);
@@ -229,14 +239,4 @@ pub fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(val_to_push);
 
     ControlFlow::Continue(n + 1)
-}
-
-pub fn concat_decimals(arr: &[u8]) -> U256 {
-    let hexadecimal_concat: String = arr
-        .iter()
-        .map(|x| format!("{:X}", x))
-        .collect::<Vec<String>>()
-        .join("");
-
-    return U256::from_str_radix(&hexadecimal_concat, 16).unwrap();
 }
