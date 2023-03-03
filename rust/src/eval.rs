@@ -39,7 +39,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
-        Opcode::DUP1 => dup1(machine),
+        Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         _ => ControlFlow::Continue(1),
     }
 }
@@ -481,7 +481,7 @@ fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
 }
 
 fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
-    let n = usize::from(machine.opcode() - 0x5F);
+    let n = usize::from(machine.opcode() - (Opcode::PUSH1 - 1));
     let start = machine.pc + 1;
     let end = start + n;
     let bytes = &machine.code[start..end];
@@ -491,8 +491,10 @@ fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(n + 1)
 }
 
-fn dup1(machine: &mut Machine) -> ControlFlow {
-    let a = machine.stack.peek(0);
+fn dup(machine: &mut Machine) -> ControlFlow {
+    let n = usize::from(machine.opcode() - Opcode::DUP1);
+
+    let a = machine.stack.peek(n);
 
     match a {
         Ok(val) => machine.stack.push(val),

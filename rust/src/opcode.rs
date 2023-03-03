@@ -31,4 +31,5 @@ impl Opcode {
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;
     pub const DUP1: u8 = 0x80;
+    pub const DUP16: u8 = 0x8F;
 }
