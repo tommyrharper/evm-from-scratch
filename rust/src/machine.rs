@@ -7,6 +7,7 @@ use primitive_types::U256;
 pub enum EvmError {
     StackUnderflow,
     InvalidInstruction,
+    InvalidJump,
 }
 
 enum EvmStatus {

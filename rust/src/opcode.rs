@@ -31,6 +31,7 @@ impl Opcode {
     pub const JUMP: u8 = 0x56;
     pub const PC: u8 = 0x58;
     pub const GAS: u8 = 0x5a;
+    pub const JUMPDEST: u8 = 0x5b;
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;
     pub const DUP1: u8 = 0x80;

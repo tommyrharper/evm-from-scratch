@@ -489,6 +489,10 @@ fn jump(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
     machine.pc = a.as_usize();
 
+    if machine.opcode() != Opcode::JUMPDEST {
+        return ControlFlow::ExitError(EvmError::InvalidJump)
+    }
+
     ControlFlow::Continue(1)
 }
 
