@@ -42,7 +42,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
         Opcode::INVALID => invalid(machine),
-        _ => ControlFlow::Continue(1),
+        _ => ControlFlow::ExitError(EvmError::InvalidInstruction),
     }
 }
 
