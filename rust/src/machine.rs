@@ -15,6 +15,7 @@ enum EvmStatus {
 pub struct EvmResult {
     pub stack: Vec<U256>,
     pub success: bool,
+    error: Option<EvmError>,
 }
 
 pub struct Machine<'a> {
@@ -58,10 +59,11 @@ impl<'a> Machine<'a> {
                     EvmStatus::Running => continue,
                     EvmStatus::Exited => break,
                 },
-                Err(_res) => {
+                Err(error) => {
                     return EvmResult {
                         stack: self.stack(),
                         success: false,
+                        error: Some(error),
                     }
                 }
             }
@@ -70,6 +72,7 @@ impl<'a> Machine<'a> {
         return EvmResult {
             stack: self.stack(),
             success: true,
+            error: None,
         };
     }
 }
