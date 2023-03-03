@@ -32,6 +32,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::OR => or(machine),
         Opcode::XOR => xor(machine),
         Opcode::NOT => not(machine),
+        Opcode::BYTE => byte(machine),
         Opcode::SHL => shl(machine),
         Opcode::SHR => shr(machine),
         Opcode::SAR => sar(machine),
@@ -379,6 +380,24 @@ fn not(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
 
     machine.stack.push(!a);
+
+    ControlFlow::Continue(1)
+}
+
+fn byte(machine: &mut Machine) -> ControlFlow {
+    let byte_offset = machine.stack.pop().unwrap();
+    let value = machine.stack.pop().unwrap();
+
+    if byte_offset >= 32.into() {
+        machine.stack.push(U256::zero());
+        return ControlFlow::Continue(1);
+    }
+
+    let byte_index = U256::from(31) - byte_offset;
+
+    let res = value.byte(byte_index.as_usize());
+
+    machine.stack.push(res.into());
 
     ControlFlow::Continue(1)
 }

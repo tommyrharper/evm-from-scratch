@@ -23,6 +23,7 @@ impl Opcode {
     pub const OR: u8 = 0x17;
     pub const XOR: u8 = 0x18;
     pub const NOT: u8 = 0x19;
+    pub const BYTE: u8 = 0x1a;
     pub const SHL: u8 = 0x1b;
     pub const SHR: u8 = 0x1c;
     pub const SAR: u8 = 0x1d;
