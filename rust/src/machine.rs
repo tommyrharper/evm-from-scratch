@@ -1,7 +1,11 @@
-use crate::stack::Stack;
-use crate::eval::ControlFlow;
 use crate::eval::eval;
+use crate::eval::ControlFlow;
+use crate::stack::Stack;
 use primitive_types::U256;
+
+pub enum EvmError {
+    StackUnderflow,
+}
 
 enum EvmStatus {
     Running,
@@ -36,28 +40,31 @@ impl<'a> Machine<'a> {
         self.code[self.pc]
     }
 
-    fn step(&mut self) -> Result<EvmStatus, ()> {
+    fn step(&mut self) -> Result<EvmStatus, EvmError> {
         match eval(self) {
             ControlFlow::Continue(steps) => {
                 self.pc += steps;
                 Ok(EvmStatus::Running)
             }
             ControlFlow::Exit => Ok(EvmStatus::Exited),
+            ControlFlow::ExitError(err) => Err(err),
         }
     }
 
     pub fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.step() {
-				Ok(status) => match status {
+                Ok(status) => match status {
                     EvmStatus::Running => continue,
                     EvmStatus::Exited => break,
                 },
-				Err(_res) => return EvmResult {
-                    stack: self.stack(),
-                    success: false,
-                },
-			}
+                Err(_res) => {
+                    return EvmResult {
+                        stack: self.stack(),
+                        success: false,
+                    }
+                }
+            }
         }
 
         return EvmResult {
