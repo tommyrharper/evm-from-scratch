@@ -40,6 +40,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
+        Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
         _ => ControlFlow::Continue(1),
     }
 }
@@ -499,6 +500,30 @@ fn dup(machine: &mut Machine) -> ControlFlow {
     match a {
         Ok(val) => machine.stack.push(val),
         Err(error) => return ControlFlow::ExitError(error),
+    }
+
+    ControlFlow::Continue(1)
+}
+
+fn swap(machine: &mut Machine) -> ControlFlow {
+    let n = usize::from(machine.opcode() - (Opcode::SWAP1 - 1));
+
+    let a = match machine.stack.peek(0) {
+        Ok(val) => val,
+        Err(err) => return ControlFlow::ExitError(err)
+    };
+    let b = match machine.stack.peek(n) {
+        Ok(val) => val,
+        Err(err) => return ControlFlow::ExitError(err)
+    };
+
+    match machine.stack.set(a, n) {
+        Ok(()) => (),
+        Err(err) => return ControlFlow::ExitError(err)
+    }
+    match machine.stack.set(b, 0) {
+        Ok(()) => (),
+        Err(err) => return ControlFlow::ExitError(err)
     }
 
     ControlFlow::Continue(1)
