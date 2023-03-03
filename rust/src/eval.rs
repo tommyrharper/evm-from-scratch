@@ -38,6 +38,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SHR => shr(machine),
         Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
+        Opcode::JUMP => jump(machine),
         Opcode::PC => pc(machine),
         Opcode::GAS => gas(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
@@ -480,6 +481,13 @@ fn sar(machine: &mut Machine) -> ControlFlow {
 
 fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.pop();
+
+    ControlFlow::Continue(1)
+}
+
+fn jump(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.pop().unwrap();
+    machine.pc = a.as_usize();
 
     ControlFlow::Continue(1)
 }
