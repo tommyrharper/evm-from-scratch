@@ -29,6 +29,7 @@ impl Opcode {
     pub const SAR: u8 = 0x1d;
     pub const POP: u8 = 0x50;
     pub const PC: u8 = 0x58;
+    pub const GAS: u8 = 0x5a;
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;
     pub const DUP1: u8 = 0x80;

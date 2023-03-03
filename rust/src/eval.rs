@@ -39,6 +39,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PC => pc(machine),
+        Opcode::GAS => gas(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
@@ -485,6 +486,13 @@ fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
 
 fn pc(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(machine.pc.into());
+
+    ControlFlow::Continue(1)
+}
+
+fn gas(machine: &mut Machine) -> ControlFlow {
+    // TODO: update to calculate gas properly (update tests first)
+    machine.stack.push(U256::MAX);
 
     ControlFlow::Continue(1)
 }
