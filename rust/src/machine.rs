@@ -6,6 +6,7 @@ use primitive_types::U256;
 #[derive(Debug)]
 pub enum EvmError {
     StackUnderflow,
+    DesignatedInvalid,
 }
 
 enum EvmStatus {

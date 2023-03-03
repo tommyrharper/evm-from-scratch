@@ -41,6 +41,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
+        Opcode::INVALID => invalid(machine),
         _ => ControlFlow::Continue(1),
     }
 }
@@ -510,21 +511,25 @@ fn swap(machine: &mut Machine) -> ControlFlow {
 
     let a = match machine.stack.peek(0) {
         Ok(val) => val,
-        Err(err) => return ControlFlow::ExitError(err)
+        Err(err) => return ControlFlow::ExitError(err),
     };
     let b = match machine.stack.peek(n) {
         Ok(val) => val,
-        Err(err) => return ControlFlow::ExitError(err)
+        Err(err) => return ControlFlow::ExitError(err),
     };
 
     match machine.stack.set(a, n) {
         Ok(()) => (),
-        Err(err) => return ControlFlow::ExitError(err)
+        Err(err) => return ControlFlow::ExitError(err),
     }
     match machine.stack.set(b, 0) {
         Ok(()) => (),
-        Err(err) => return ControlFlow::ExitError(err)
+        Err(err) => return ControlFlow::ExitError(err),
     }
 
     ControlFlow::Continue(1)
+}
+
+fn invalid(_machine: &mut Machine) -> ControlFlow {
+    ControlFlow::ExitError(EvmError::DesignatedInvalid)
 }

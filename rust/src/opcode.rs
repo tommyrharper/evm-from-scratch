@@ -34,4 +34,5 @@ impl Opcode {
     pub const DUP16: u8 = 0x8F;
     pub const SWAP1: u8 = 0x90;
     pub const SWAP16: u8 = 0x9F;
+    pub const INVALID: u8 = 0xFE;
 }
