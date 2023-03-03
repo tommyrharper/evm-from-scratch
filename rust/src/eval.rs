@@ -531,5 +531,5 @@ fn swap(machine: &mut Machine) -> ControlFlow {
 }
 
 fn invalid(_machine: &mut Machine) -> ControlFlow {
-    ControlFlow::ExitError(EvmError::DesignatedInvalid)
+    ControlFlow::ExitError(EvmError::InvalidInstruction)
 }
