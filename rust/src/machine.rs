@@ -3,6 +3,7 @@ use crate::eval::ControlFlow;
 use crate::stack::Stack;
 use primitive_types::U256;
 
+#[derive(Debug)]
 pub enum EvmError {
     StackUnderflow,
 }
@@ -15,7 +16,7 @@ enum EvmStatus {
 pub struct EvmResult {
     pub stack: Vec<U256>,
     pub success: bool,
-    error: Option<EvmError>,
+    pub error: Option<EvmError>,
 }
 
 pub struct Machine<'a> {
