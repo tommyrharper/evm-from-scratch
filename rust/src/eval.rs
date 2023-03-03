@@ -1,10 +1,11 @@
 use crate::helpers::*;
-use crate::machine::Machine;
+use crate::machine::{EvmError, Machine};
 use crate::opcode::Opcode;
 use primitive_types::U256;
 
 pub enum ControlFlow {
     Continue(usize),
+    ExitError(EvmError),
     Exit,
 }
 
@@ -38,6 +39,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
+        Opcode::DUP1 => dup1(machine),
         _ => ControlFlow::Continue(1),
     }
 }
@@ -487,4 +489,15 @@ fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(val_to_push);
 
     ControlFlow::Continue(n + 1)
+}
+
+fn dup1(machine: &mut Machine) -> ControlFlow {
+    let a = machine.stack.peek(0);
+
+    match a {
+        Ok(val) => machine.stack.push(val),
+        Err(error) => return ControlFlow::ExitError(error),
+    }
+
+    ControlFlow::Continue(1)
 }

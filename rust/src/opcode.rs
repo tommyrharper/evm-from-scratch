@@ -30,4 +30,5 @@ impl Opcode {
     pub const POP: u8 = 0x50;
     pub const PUSH1: u8 = 0x60;
     pub const PUSH32: u8 = 0x7F;
+    pub const DUP1: u8 = 0x80;
 }
