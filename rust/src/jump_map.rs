@@ -2,15 +2,11 @@ use primitive_types::U256;
 
 use crate::opcode::Opcode;
 
-pub struct JumpMap {
-    vals: Vec<bool>,
-}
+pub struct JumpMap(Vec<bool>);
 
 impl JumpMap {
     pub fn new(code: &[u8]) -> Self {
-        Self {
-            vals: Self::generate_map(code),
-        }
+        Self(Self::generate_map(code))
     }
 
     fn generate_map(code: &[u8]) -> Vec<bool> {
@@ -41,8 +37,8 @@ impl JumpMap {
     }
 
     pub fn is_valid(&self, index: U256) -> bool {
-        if index < self.vals.len().into() {
-            self.vals[index.as_usize()]
+        if index < self.0.len().into() {
+            self.0[index.as_usize()]
         } else {
             false
         }
