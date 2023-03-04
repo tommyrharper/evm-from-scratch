@@ -49,9 +49,11 @@
    -  i - the active number of words in memory (counting continuously from position 0)
    -  s - the stack contents. 
 
-- μm - The memory contents are a series of zeroes of size 2256
+- μm - The memory contents are a series of zeroes of size 256
 - w - the current operation to be executed
+- δ - the stack items removed
+- α - the stack items added
+- C - instruction cost function evaluating to the full cost, in gas, of executing the given instruction.
 
 
-
-
+(w = JUMP ∧ μs[0] ∈/ D(Ib))
