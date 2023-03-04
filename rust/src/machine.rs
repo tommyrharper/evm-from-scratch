@@ -54,7 +54,7 @@ impl<'a> Machine<'a> {
                 Ok(EvmStatus::Running)
             },
             ControlFlow::Jump(position) => {
-                self.pc = position + 1;
+                self.pc = position;
                 Ok(EvmStatus::Running)
             }
             ControlFlow::Exit => Ok(EvmStatus::Exited),

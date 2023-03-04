@@ -40,8 +40,10 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::JUMP => jump(machine),
+        Opcode::JUMPI => jumpi(machine),
         Opcode::PC => pc(machine),
         Opcode::GAS => gas(machine),
+        Opcode::JUMPDEST => jumpdest(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
@@ -497,6 +499,23 @@ fn jump(machine: &mut Machine) -> ControlFlow {
     }
 }
 
+fn jumpi(machine: &mut Machine) -> ControlFlow {
+    let jump_to = machine.stack.pop().unwrap();
+    let should_jump = machine.stack.pop().unwrap();
+
+    if should_jump.is_zero() {
+        return ControlFlow::Continue(1);
+    }
+
+    let is_valid = machine.jump_map.is_valid(jump_to);
+
+    if is_valid {
+        ControlFlow::Jump(jump_to.as_usize())
+    } else {
+        ControlFlow::ExitError(EvmError::InvalidJump)
+    }
+}
+
 fn pc(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(machine.pc.into());
 
@@ -507,6 +526,9 @@ fn gas(machine: &mut Machine) -> ControlFlow {
     // TODO: update to calculate gas properly (update tests first)
     machine.stack.push(U256::MAX);
 
+    ControlFlow::Continue(1)
+}
+fn jumpdest(_machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 

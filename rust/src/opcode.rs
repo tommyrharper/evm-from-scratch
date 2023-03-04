@@ -29,6 +29,7 @@ impl Opcode {
     pub const SAR: u8 = 0x1d;
     pub const POP: u8 = 0x50;
     pub const JUMP: u8 = 0x56;
+    pub const JUMPI: u8 = 0x57;
     pub const PC: u8 = 0x58;
     pub const GAS: u8 = 0x5a;
     pub const JUMPDEST: u8 = 0x5b;
