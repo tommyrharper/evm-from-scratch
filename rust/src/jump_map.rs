@@ -15,19 +15,22 @@ impl JumpMap {
 
     fn generate_map(code: &[u8]) -> Vec<bool> {
         let mut map: Vec<bool> = vec![];
-        let mut block_count = 0;
+        let mut steps_to_block = 0;
         for i in 0..code.len() {
-            if block_count > 0 {
-                block_count -= 1;
+            if steps_to_block > 0 {
+                steps_to_block -= 1;
             }
 
             let opcode = code[i];
-            // TODO: optimize to use map instead of list
-            if (Opcode::PUSH1..=Opcode::PUSH32).contains(&opcode) {
-                block_count = usize::from(opcode) - usize::from(Opcode::PUSH1) + 2
+
+            match opcode {
+                Opcode::PUSH1..=Opcode::PUSH32 => {
+                    steps_to_block = usize::from(opcode) - usize::from(Opcode::PUSH1) + 2;
+                }
+                _ => (),
             }
 
-            if block_count == 0 && opcode == Opcode::JUMPDEST {
+            if steps_to_block == 0 && opcode == Opcode::JUMPDEST {
                 map.push(true);
             } else {
                 map.push(false);
