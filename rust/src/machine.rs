@@ -24,8 +24,8 @@ pub struct EvmResult {
 
 pub struct Machine<'a> {
     pub stack: Stack,
-    pub code: &'a [u8],
     pub jump_map: JumpMap,
+    pub code: &'a [u8],
     pub pc: usize,
 }
 
@@ -33,8 +33,8 @@ impl<'a> Machine<'a> {
     pub fn new(code: &'a [u8]) -> Self {
         Self {
             stack: Stack::new(),
-            code,
             jump_map: JumpMap::new(code),
+            code,
             pc: 0,
         }
     }

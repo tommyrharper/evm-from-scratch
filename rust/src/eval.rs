@@ -487,13 +487,15 @@ fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
 
 fn jump(machine: &mut Machine) -> ControlFlow {
     let a = machine.stack.pop().unwrap();
-    machine.pc = a.as_usize();
+    let is_valid = machine.jump_map.is_valid(a);
 
-    if machine.opcode() != Opcode::JUMPDEST {
-        return ControlFlow::ExitError(EvmError::InvalidJump)
+    if is_valid {
+        // TODO: move pc update into machine
+        machine.pc = a.as_usize();
+        ControlFlow::Continue(1)
+    } else {
+        ControlFlow::ExitError(EvmError::InvalidJump)
     }
-
-    ControlFlow::Continue(1)
 }
 
 fn pc(machine: &mut Machine) -> ControlFlow {
