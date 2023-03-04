@@ -1,5 +1,6 @@
 use crate::eval::eval;
 use crate::eval::ControlFlow;
+use crate::jump_map::JumpMap;
 use crate::stack::Stack;
 use primitive_types::U256;
 
@@ -24,6 +25,7 @@ pub struct EvmResult {
 pub struct Machine<'a> {
     pub stack: Stack,
     pub code: &'a [u8],
+    pub jump_map: JumpMap,
     pub pc: usize,
 }
 
@@ -32,6 +34,7 @@ impl<'a> Machine<'a> {
         Self {
             stack: Stack::new(),
             code,
+            jump_map: JumpMap::new(code),
             pc: 0,
         }
     }

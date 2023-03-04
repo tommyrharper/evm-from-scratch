@@ -3,6 +3,7 @@ mod stack;
 mod eval;
 mod machine;
 mod helpers;
+mod jump_map;
 
 use crate::machine::Machine;
 use crate::machine::EvmResult;
