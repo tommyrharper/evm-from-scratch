@@ -1,6 +1,7 @@
 use crate::eval::eval;
 use crate::eval::ControlFlow;
 use crate::jump_map::JumpMap;
+use crate::memory::Memory;
 use crate::stack::Stack;
 use primitive_types::U256;
 
@@ -9,6 +10,7 @@ pub enum EvmError {
     StackUnderflow,
     InvalidInstruction,
     InvalidJump,
+    Unknown // TODO: update to something more meaningful
 }
 
 enum EvmStatus {
@@ -24,6 +26,7 @@ pub struct EvmResult {
 
 pub struct Machine<'a> {
     pub stack: Stack,
+    pub memory: Memory,
     pub jump_map: JumpMap,
     pub code: &'a [u8],
     pub pc: usize,
@@ -33,6 +36,7 @@ impl<'a> Machine<'a> {
     pub fn new(code: &'a [u8]) -> Self {
         Self {
             stack: Stack::new(),
+            memory: Memory::new(),
             jump_map: JumpMap::new(code),
             code,
             pc: 0,

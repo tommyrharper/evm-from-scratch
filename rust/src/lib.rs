@@ -4,6 +4,7 @@ mod eval;
 mod machine;
 mod helpers;
 mod jump_map;
+mod memory;
 
 use crate::machine::Machine;
 use crate::machine::EvmResult;
