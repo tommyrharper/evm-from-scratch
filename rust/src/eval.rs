@@ -5,6 +5,7 @@ use primitive_types::U256;
 
 pub enum ControlFlow {
     Continue(usize),
+    Jump(usize),
     ExitError(EvmError),
     Exit,
 }
@@ -490,9 +491,7 @@ fn jump(machine: &mut Machine) -> ControlFlow {
     let is_valid = machine.jump_map.is_valid(a);
 
     if is_valid {
-        // TODO: move pc update into machine
-        machine.pc = a.as_usize();
-        ControlFlow::Continue(1)
+        ControlFlow::Jump(a.as_usize())
     } else {
         ControlFlow::ExitError(EvmError::InvalidJump)
     }

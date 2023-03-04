@@ -52,6 +52,10 @@ impl<'a> Machine<'a> {
             ControlFlow::Continue(steps) => {
                 self.pc += steps;
                 Ok(EvmStatus::Running)
+            },
+            ControlFlow::Jump(position) => {
+                self.pc = position + 1;
+                Ok(EvmStatus::Running)
             }
             ControlFlow::Exit => Ok(EvmStatus::Exited),
             ControlFlow::ExitError(err) => Err(err),
