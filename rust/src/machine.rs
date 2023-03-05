@@ -1,3 +1,4 @@
+use crate::block::Block;
 use crate::eval::eval;
 use crate::eval::ControlFlow;
 use crate::jump_map::JumpMap;
@@ -31,6 +32,7 @@ pub struct Machine<'a> {
     pub code: &'a [u8],
     pub address: &'a [u8],
     pub transaction: Transaction<'a>,
+    pub block: Block<'a>,
     pub pc: usize,
 }
 
@@ -38,13 +40,15 @@ impl<'a> Machine<'a> {
     pub fn new(
         code: &'a [u8],
         address: &'a [u8],
-        transaction: Transaction<'a>
+        transaction: Transaction<'a>,
+        block: Block<'a>
     ) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
             jump_map: JumpMap::new(code),
             transaction,
+            block,
             address,
             code,
             pc: 0,

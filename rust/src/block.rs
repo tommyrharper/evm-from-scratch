@@ -10,7 +10,7 @@ pub struct Block<'a> {
 
 impl<'a> Block<'a> {
     pub fn new(
-        coinbase: &'a [u8],
+        basefee: &'a [u8],
         coinbase: &'a [u8],
         timestamp: &'a [u8],
         number: &'a [u8],
@@ -19,7 +19,7 @@ impl<'a> Block<'a> {
         chainid: &'a [u8],
     ) -> Self {
         Self {
-            coinbase,
+            basefee,
             coinbase,
             timestamp,
             number,

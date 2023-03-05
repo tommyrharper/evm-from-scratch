@@ -13,9 +13,10 @@
  * to Rust, implement EVM in another programming language first.
  */
 use evm::evm;
+use evm::transaction::Transaction;
+use evm::block::Block;
 use primitive_types::U256;
 use serde::Deserialize;
-use evm::transaction::Transaction;
 
 #[derive(Debug, Deserialize)]
 struct Evmtest {
@@ -23,6 +24,7 @@ struct Evmtest {
     hint: String,
     code: Code,
     tx: Option<Tx>,
+    block_data: Option<BlockData>,
     expect: Expect,
 }
 
@@ -32,6 +34,17 @@ struct Tx {
     from: Option<String>,
     origin: Option<String>,
     gasprice: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct BlockData {
+    basefee: Option<String>,
+    coinbase: Option<String>,
+    timestamp: Option<String>,
+    number: Option<String>,
+    difficulty: Option<String>,
+    gaslimit: Option<String>,
+    chainid: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -88,11 +101,71 @@ fn main() {
             },
             None => vec![],
         };
+        let basefee = match &test.block_data {
+            Some(tx) => match &tx.basefee {
+                Some(basefee) => hex::decode(basefee[2..basefee.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
+        let coinbase = match &test.block_data {
+            Some(tx) => match &tx.coinbase {
+                Some(coinbase) => hex::decode(coinbase[2..coinbase.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
+        let timestamp = match &test.block_data {
+            Some(tx) => match &tx.timestamp {
+                Some(timestamp) => hex::decode(timestamp[2..timestamp.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
+        let number = match &test.block_data {
+            Some(tx) => match &tx.number {
+                Some(number) => hex::decode(number[2..number.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
+        let difficulty = match &test.block_data {
+            Some(tx) => match &tx.difficulty {
+                Some(difficulty) => {
+                    hex::decode(difficulty[2..difficulty.len()].to_string()).unwrap()
+                }
+                None => vec![],
+            },
+            None => vec![],
+        };
+        let gaslimit = match &test.block_data {
+            Some(tx) => match &tx.gaslimit {
+                Some(gaslimit) => hex::decode(gaslimit[2..gaslimit.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
+        let chainid = match &test.block_data {
+            Some(tx) => match &tx.chainid {
+                Some(chainid) => hex::decode(chainid[2..chainid.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
 
         let result = evm(
             &code,
             &address,
             Transaction::new(&caller, &origin, &gasprice),
+            Block::new(
+                &basefee,
+                &coinbase,
+                &timestamp,
+                &number,
+                &difficulty,
+                &gaslimit,
+                &chainid,
+            ),
         );
 
         let mut expected_stack: Vec<U256> = Vec::new();
