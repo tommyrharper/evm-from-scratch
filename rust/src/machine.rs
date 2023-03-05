@@ -30,12 +30,14 @@ pub struct Machine<'a> {
     pub jump_map: JumpMap,
     pub code: &'a [u8],
     pub address: &'a [u8],
+    // TODO: refactor onto Tx sub struct
     pub caller: &'a [u8],
+    pub origin: &'a [u8],
     pub pc: usize,
 }
 
 impl<'a> Machine<'a> {
-    pub fn new(code: &'a [u8], address: &'a [u8], caller: &'a [u8]) -> Self {
+    pub fn new(code: &'a [u8], address: &'a [u8], caller: &'a [u8], origin: &'a [u8]) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
@@ -43,6 +45,7 @@ impl<'a> Machine<'a> {
             code,
             address,
             caller,
+            origin,
             pc: 0,
         }
     }

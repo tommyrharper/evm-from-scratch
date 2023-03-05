@@ -29,6 +29,7 @@ struct Evmtest {
 struct Tx {
     to: Option<String>,
     from: Option<String>,
+    origin: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -55,6 +56,8 @@ fn main() {
         println!("Test {} of {}: {}", index + 1, total, test.name);
 
         let code: Vec<u8> = hex::decode(&test.code.bin).unwrap();
+
+        // TODO: update to use macro here
         let address = match &test.tx {
             Some(tx) => match &tx.to {
                 Some(to) => hex::decode(to[2..to.len()].to_string()).unwrap(),
@@ -69,8 +72,15 @@ fn main() {
             },
             None => vec![],
         };
+        let origin = match &test.tx {
+            Some(tx) => match &tx.origin {
+                Some(origin) => hex::decode(origin[2..origin.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
 
-        let result = evm(&code, &address, &caller);
+        let result = evm(&code, &address, &caller, &origin);
 
         let mut expected_stack: Vec<U256> = Vec::new();
         if let Some(ref stacks) = test.expect.stack {
