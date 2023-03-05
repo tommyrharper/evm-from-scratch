@@ -24,8 +24,10 @@ impl Memory {
     }
 
     fn resize(&mut self, length: usize) {
-        self.data.resize(length, 0);
-        self.len_words = max(self.len_words, ceil_divide(length, WORD_BYTES)).into();
+        if length >= self.len_words * WORD_BYTES {
+            self.data.resize(length, 0);
+            self.len_words = ceil_divide(length, WORD_BYTES);
+        }
     }
 
     // memory′[offset . . . (offset + 31)] ≡ value
@@ -43,9 +45,7 @@ impl Memory {
 
     pub fn get(&mut self, byte_offset: usize) -> &[u8] {
         let end_index = byte_offset + WORD_BYTES;
-        if end_index >= self.len_words {
-            self.resize(end_index);
-        }
+        self.resize(end_index);
         &self.data[byte_offset..end_index]
     }
 }
