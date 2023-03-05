@@ -46,6 +46,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::JUMP => jump(machine),
         Opcode::JUMPI => jumpi(machine),
         Opcode::PC => pc(machine),
+        Opcode::MSIZE => msize(machine),
         Opcode::GAS => gas(machine),
         Opcode::JUMPDEST => jumpdest(machine),
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
@@ -554,6 +555,13 @@ fn jumpi(machine: &mut Machine) -> ControlFlow {
 
 fn pc(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(machine.pc.into());
+
+    ControlFlow::Continue(1)
+}
+
+fn msize(machine: &mut Machine) -> ControlFlow {
+    let res = machine.memory.size();
+    machine.stack.push(res.into());
 
     ControlFlow::Continue(1)
 }

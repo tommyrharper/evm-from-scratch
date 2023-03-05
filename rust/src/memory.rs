@@ -19,6 +19,10 @@ impl Memory {
         }
     }
 
+    pub fn size(&self) -> usize {
+        self.len * 8
+    }
+
     fn resize(&mut self, length: usize) {
         self.data.resize(length, 0);
     }
@@ -38,7 +42,6 @@ impl Memory {
         Ok(())
     }
 
-    // TODO: remove Result from return
     pub fn get(&mut self, byte_offset: usize) -> &[u8] {
         if byte_offset + 32 >= self.len {
             self.resize(byte_offset + WORD_BYTES);
