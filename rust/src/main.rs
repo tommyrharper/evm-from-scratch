@@ -1,3 +1,4 @@
+use evm::block::Block;
 /**
  * EVM From Scratch
  * Rust template
@@ -14,7 +15,6 @@
  */
 use evm::evm;
 use evm::transaction::Transaction;
-use evm::block::Block;
 use primitive_types::U256;
 use serde::Deserialize;
 
@@ -24,7 +24,7 @@ struct Evmtest {
     hint: String,
     code: Code,
     tx: Option<Tx>,
-    block_data: Option<BlockData>,
+    block: Option<BlockData>,
     expect: Expect,
 }
 
@@ -101,35 +101,43 @@ fn main() {
             },
             None => vec![],
         };
-        let basefee = match &test.block_data {
+        let basefee = match &test.block {
             Some(tx) => match &tx.basefee {
-                Some(basefee) => hex::decode(basefee[2..basefee.len()].to_string()).unwrap(),
+                Some(basefee) => {
+                    let slice = &basefee[2..basefee.len()];
+                    let mut res = String::new();
+                    if slice.len() % 2 == 1 {
+                        res.push('0');
+                    }
+                    res.push_str(slice);
+                    hex::decode(res).unwrap()
+                }
                 None => vec![],
             },
             None => vec![],
         };
-        let coinbase = match &test.block_data {
+        let coinbase = match &test.block {
             Some(tx) => match &tx.coinbase {
                 Some(coinbase) => hex::decode(coinbase[2..coinbase.len()].to_string()).unwrap(),
                 None => vec![],
             },
             None => vec![],
         };
-        let timestamp = match &test.block_data {
+        let timestamp = match &test.block {
             Some(tx) => match &tx.timestamp {
                 Some(timestamp) => hex::decode(timestamp[2..timestamp.len()].to_string()).unwrap(),
                 None => vec![],
             },
             None => vec![],
         };
-        let number = match &test.block_data {
+        let number = match &test.block {
             Some(tx) => match &tx.number {
                 Some(number) => hex::decode(number[2..number.len()].to_string()).unwrap(),
                 None => vec![],
             },
             None => vec![],
         };
-        let difficulty = match &test.block_data {
+        let difficulty = match &test.block {
             Some(tx) => match &tx.difficulty {
                 Some(difficulty) => {
                     hex::decode(difficulty[2..difficulty.len()].to_string()).unwrap()
@@ -138,14 +146,14 @@ fn main() {
             },
             None => vec![],
         };
-        let gaslimit = match &test.block_data {
+        let gaslimit = match &test.block {
             Some(tx) => match &tx.gaslimit {
                 Some(gaslimit) => hex::decode(gaslimit[2..gaslimit.len()].to_string()).unwrap(),
                 None => vec![],
             },
             None => vec![],
         };
-        let chainid = match &test.block_data {
+        let chainid = match &test.block {
             Some(tx) => match &tx.chainid {
                 Some(chainid) => hex::decode(chainid[2..chainid.len()].to_string()).unwrap(),
                 None => vec![],
