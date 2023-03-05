@@ -42,7 +42,10 @@ impl Memory {
         Ok(())
     }
 
-    pub fn get(&self, byte_offset: usize) -> Result<&[u8], ()> {
+    pub fn get(&mut self, byte_offset: usize) -> Result<&[u8], ()> {
+        if byte_offset + 32 >= self.len {
+            self.data.resize(byte_offset + 32, 0);
+        }
         let slice = &self.data[byte_offset..byte_offset + 32];
         Ok(slice)
     }
