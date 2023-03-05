@@ -514,7 +514,7 @@ fn mload(machine: &mut Machine) -> ControlFlow {
 
     let res = machine.memory.get(byte_offset.as_usize(), WORD_BYTES);
 
-    machine.stack.push(concat_decimals(res));
+    machine.stack.push(U256::from_big_endian(res));
     ControlFlow::Continue(1)
 }
 
@@ -597,7 +597,7 @@ fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
     let start = machine.pc + 1;
     let end = start + n;
     let bytes = &machine.code[start..end];
-    let val_to_push = concat_decimals(bytes);
+    let val_to_push = U256::from_big_endian(bytes);
     machine.stack.push(val_to_push);
 
     ControlFlow::Continue(n + 1)
