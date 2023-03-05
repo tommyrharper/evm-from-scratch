@@ -1,3 +1,4 @@
+// TODO: rename to be environment data and add address to struct
 pub struct Transaction<'a> {
     pub caller: &'a [u8],
     pub origin: &'a [u8],

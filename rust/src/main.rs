@@ -158,13 +158,13 @@ fn main() {
             &address,
             Transaction::new(&caller, &origin, &gasprice),
             Block::new(
-                &basefee,
                 &coinbase,
                 &timestamp,
                 &number,
                 &difficulty,
                 &gaslimit,
                 &chainid,
+                &basefee,
             ),
         );
 

@@ -19,13 +19,13 @@ impl<'a> Block<'a> {
         basefee: &'a [u8],
     ) -> Self {
         Self {
-            basefee,
             coinbase,
             timestamp,
             number,
             difficulty,
             gaslimit,
             chainid,
+            basefee,
         }
     }
 }

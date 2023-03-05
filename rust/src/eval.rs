@@ -45,6 +45,13 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
         Opcode::GASPRICE => gasprice(machine),
+        Opcode::COINBASE => coinbase(machine),
+        Opcode::TIMESTAMP => timestamp(machine),
+        Opcode::NUMBER => number(machine),
+        Opcode::DIFFICULTY => difficulty(machine),
+        Opcode::GASLIMIT => gaslimit(machine),
+        Opcode::CHAINID => chainid(machine),
+        Opcode::BASEFEE => basefee(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
@@ -533,6 +540,62 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.transaction.gasprice));
+
+    ControlFlow::Continue(1)
+}
+
+fn coinbase(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.coinbase));
+
+    ControlFlow::Continue(1)
+}
+
+fn timestamp(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.timestamp));
+
+    ControlFlow::Continue(1)
+}
+
+fn number(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.number));
+
+    ControlFlow::Continue(1)
+}
+
+fn difficulty(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.difficulty));
+
+    ControlFlow::Continue(1)
+}
+
+fn gaslimit(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.gaslimit));
+
+    ControlFlow::Continue(1)
+}
+
+fn chainid(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.chainid));
+
+    ControlFlow::Continue(1)
+}
+
+fn basefee(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.block.basefee));
 
     ControlFlow::Continue(1)
 }
