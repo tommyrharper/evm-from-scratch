@@ -32,6 +32,13 @@ impl Opcode {
     pub const ORIGIN: u8 = 0x32;
     pub const CALLER: u8 = 0x33;
     pub const GASPRICE: u8 = 0x3a;
+    pub const COINBASE: u8 = 0x41;
+    pub const TIMESTAMP: u8 = 0x42;
+    pub const NUMBER: u8 = 0x43;
+    pub const DIFFICULTY: u8 = 0x44;
+    pub const GASLIMIT: u8 = 0x45;
+    pub const CHAINID: u8 = 0x46;
+    pub const BASEFEE: u8 = 0x48;
     pub const POP: u8 = 0x50;
     pub const MLOAD: u8 = 0x51;
     pub const MSTORE: u8 = 0x52;
