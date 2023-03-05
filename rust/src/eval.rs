@@ -44,6 +44,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::ADDRESS => address(machine),
         Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
+        Opcode::GASPRICE => gasprice(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
@@ -524,6 +525,14 @@ fn caller(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.transaction.caller));
+
+    ControlFlow::Continue(1)
+}
+
+fn gasprice(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.transaction.gasprice));
 
     ControlFlow::Continue(1)
 }
