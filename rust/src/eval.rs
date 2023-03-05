@@ -512,7 +512,7 @@ fn address(machine: &mut Machine) -> ControlFlow {
 }
 
 fn caller(machine: &mut Machine) -> ControlFlow {
-    machine.stack.push(U256::from_big_endian(machine.caller));
+    machine.stack.push(U256::from_big_endian(machine.transaction.caller));
 
     ControlFlow::Continue(1)
 }

@@ -6,6 +6,7 @@ mod machine;
 mod memory;
 mod opcode;
 mod stack;
+mod transaction;
 
 use crate::machine::EvmResult;
 use crate::machine::Machine;

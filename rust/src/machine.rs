@@ -3,6 +3,7 @@ use crate::eval::ControlFlow;
 use crate::jump_map::JumpMap;
 use crate::memory::Memory;
 use crate::stack::Stack;
+use crate::transaction::Transaction;
 use primitive_types::U256;
 
 #[derive(Debug)]
@@ -30,9 +31,7 @@ pub struct Machine<'a> {
     pub jump_map: JumpMap,
     pub code: &'a [u8],
     pub address: &'a [u8],
-    // TODO: refactor onto Tx sub struct
-    pub caller: &'a [u8],
-    pub origin: &'a [u8],
+    pub transaction: Transaction<'a>,
     pub pc: usize,
 }
 
@@ -42,10 +41,9 @@ impl<'a> Machine<'a> {
             stack: Stack::new(),
             memory: Memory::new(),
             jump_map: JumpMap::new(code),
-            code,
+            transaction: Transaction::new(caller, origin),
             address,
-            caller,
-            origin,
+            code,
             pc: 0,
         }
     }
