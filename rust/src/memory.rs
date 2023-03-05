@@ -20,11 +20,12 @@ impl Memory {
     }
 
     pub fn size(&self) -> usize {
-        self.len * 8
+        self.len * WORD_BYTES
     }
 
     fn resize(&mut self, length: usize) {
         self.data.resize(length, 0);
+        self.len = max(self.len, ceil_divide(length, WORD_BYTES)).into();
     }
 
     // memory′[offset . . . (offset + 31)] ≡ value
@@ -36,8 +37,6 @@ impl Memory {
             let byte = value.byte(target_size - 1 - i);
             self.data[byte_offset + i] = byte;
         }
-
-        self.len = max(self.len, ceil_divide(byte_offset + target_size, WORD_BYTES)).into();
 
         Ok(())
     }
