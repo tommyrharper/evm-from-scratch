@@ -35,12 +35,18 @@ pub struct Machine<'a> {
 }
 
 impl<'a> Machine<'a> {
-    pub fn new(code: &'a [u8], address: &'a [u8], caller: &'a [u8], origin: &'a [u8]) -> Self {
+    pub fn new(
+        code: &'a [u8],
+        address: &'a [u8],
+        caller: &'a [u8],
+        origin: &'a [u8],
+        gasprice: &'a [u8],
+    ) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
             jump_map: JumpMap::new(code),
-            transaction: Transaction::new(caller, origin),
+            transaction: Transaction::new(caller, origin, gasprice),
             address,
             code,
             pc: 0,
@@ -60,7 +66,7 @@ impl<'a> Machine<'a> {
             ControlFlow::Continue(steps) => {
                 self.pc += steps;
                 Ok(EvmStatus::Running)
-            },
+            }
             ControlFlow::Jump(position) => {
                 self.pc = position;
                 Ok(EvmStatus::Running)

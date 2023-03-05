@@ -30,6 +30,7 @@ struct Tx {
     to: Option<String>,
     from: Option<String>,
     origin: Option<String>,
+    gasprice: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -79,8 +80,15 @@ fn main() {
             },
             None => vec![],
         };
+        let gasprice = match &test.tx {
+            Some(tx) => match &tx.gasprice {
+                Some(gasprice) => hex::decode(gasprice[2..gasprice.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
 
-        let result = evm(&code, &address, &caller, &origin);
+        let result = evm(&code, &address, &caller, &origin, &gasprice);
 
         let mut expected_stack: Vec<U256> = Vec::new();
         if let Some(ref stacks) = test.expect.stack {
