@@ -21,7 +21,13 @@ struct Evmtest {
     name: String,
     hint: String,
     code: Code,
+    tx: Option<Tx>,
     expect: Expect,
+}
+
+#[derive(Debug, Deserialize)]
+struct Tx {
+    to: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -48,8 +54,15 @@ fn main() {
         println!("Test {} of {}: {}", index + 1, total, test.name);
 
         let code: Vec<u8> = hex::decode(&test.code.bin).unwrap();
+        let address = match &test.tx {
+            Some(tx) => match &tx.to {
+                Some(to) => hex::decode(to[2..to.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
 
-        let result = evm(&code);
+        let result = evm(&code, &address);
 
         let mut expected_stack: Vec<U256> = Vec::new();
         if let Some(ref stacks) = test.expect.stack {

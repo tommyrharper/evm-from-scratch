@@ -29,16 +29,18 @@ pub struct Machine<'a> {
     pub memory: Memory,
     pub jump_map: JumpMap,
     pub code: &'a [u8],
+    pub address: &'a [u8],
     pub pc: usize,
 }
 
 impl<'a> Machine<'a> {
-    pub fn new(code: &'a [u8]) -> Self {
+    pub fn new(code: &'a [u8], address: &'a [u8]) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
             jump_map: JumpMap::new(code),
             code,
+            address,
             pc: 0,
         }
     }
