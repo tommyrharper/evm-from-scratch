@@ -2,24 +2,6 @@ use std::ops::{Add, Sub, Div};
 
 use primitive_types::U256;
 
-// TODO: remove manual impl to use :x?
-// https://stackoverflow.com/questions/27650312/show-u8-slice-in-hex-representation
-pub fn concat_decimals(arr: &[u8]) -> U256 {
-    let hexadecimal_concat: String = arr
-        .iter()
-        .map(|x| {
-            if x < &16 {
-                format!("0{:X}", x)
-            } else {
-                format!("{:X}", x)
-            }
-        })
-        .collect::<Vec<String>>()
-        .join("");
-
-    return U256::from_str_radix(&hexadecimal_concat, 16).unwrap();
-}
-
 pub fn convert_twos_compliment(x: U256) -> U256 {
     // Note, normally the twos compliment of 0 is 0
     // However according to the EVM spec it seems to want this behaviour
