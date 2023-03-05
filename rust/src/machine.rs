@@ -11,7 +11,6 @@ pub enum EvmError {
     StackUnderflow,
     InvalidInstruction,
     InvalidJump,
-    Unknown // TODO: update to something more meaningful
 }
 
 enum EvmStatus {

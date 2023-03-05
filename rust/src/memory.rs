@@ -27,15 +27,13 @@ impl Memory {
 
     // memory′[offset . . . (offset + 31)] ≡ value
     // num_words_in_mem′≡max(num_words_in_mem, ceil( (offset+32)÷32 ) )
-    pub fn set(&mut self, byte_offset: usize, value: U256, target_size: usize) -> Result<(), ()> {
+    pub fn set(&mut self, byte_offset: usize, value: U256, target_size: usize) {
         self.resize(byte_offset + target_size);
 
         for i in 0..target_size {
             let byte = value.byte(target_size - 1 - i);
             self.data[byte_offset + i] = byte;
         }
-
-        Ok(())
     }
 
     pub fn get(&mut self, byte_offset: usize, target_size: usize) -> &[u8] {

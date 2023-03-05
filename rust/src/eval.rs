@@ -499,7 +499,7 @@ fn keccak256(machine: &mut Machine) -> ControlFlow {
     let size = machine.stack.pop().unwrap();
 
     let data_to_hash = machine.memory.get(offset.as_usize(), size.as_usize());
-	let hashed_data = Keccak256::digest(data_to_hash);
+    let hashed_data = Keccak256::digest(data_to_hash);
 
     machine.stack.push(U256::from_big_endian(&hashed_data));
 
@@ -513,13 +513,17 @@ fn address(machine: &mut Machine) -> ControlFlow {
 }
 
 fn origin(machine: &mut Machine) -> ControlFlow {
-    machine.stack.push(U256::from_big_endian(machine.transaction.origin));
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.transaction.origin));
 
     ControlFlow::Continue(1)
 }
 
 fn caller(machine: &mut Machine) -> ControlFlow {
-    machine.stack.push(U256::from_big_endian(machine.transaction.caller));
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.transaction.caller));
 
     ControlFlow::Continue(1)
 }
@@ -543,23 +547,20 @@ fn mstore(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
     let value = machine.stack.pop().unwrap();
 
-    match machine
+    machine
         .memory
-        .set(byte_offset.as_usize(), value, WORD_BYTES)
-    {
-        Ok(()) => ControlFlow::Continue(1),
-        Err(()) => ControlFlow::ExitError(EvmError::Unknown),
-    }
+        .set(byte_offset.as_usize(), value, WORD_BYTES);
+
+    ControlFlow::Continue(1)
 }
 
 fn mstore8(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
     let value = machine.stack.pop().unwrap();
 
-    match machine.memory.set(byte_offset.as_usize(), value, 1) {
-        Ok(()) => ControlFlow::Continue(1),
-        Err(()) => ControlFlow::ExitError(EvmError::Unknown),
-    }
+    machine.memory.set(byte_offset.as_usize(), value, 1);
+
+    ControlFlow::Continue(1)
 }
 
 fn jump(machine: &mut Machine) -> ControlFlow {
