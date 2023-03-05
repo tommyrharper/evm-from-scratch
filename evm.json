@@ -1356,6 +1356,34 @@
     }
   },
   {
+    "name": "MSTORE two times load first",
+    "hint": "Read \"Memory\" section of the course learning materials before implementing memory opcodes",
+    "code": {
+      "asm": "PUSH32 0x0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\nPUSH1 0\nMSTORE\nPUSH32 0x0202030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f1f\nPUSH1 32\nMSTORE\nPUSH1 0\nMLOAD",
+      "bin": "7f0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f206000527f0202030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f1f602052600051"
+    },
+    "expect": {
+      "stack": [
+        "0x102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+      ],
+      "success": true
+    }
+  },
+  {
+    "name": "MSTORE two times load second",
+    "hint": "Read \"Memory\" section of the course learning materials before implementing memory opcodes",
+    "code": {
+      "asm": "PUSH32 0x0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\nPUSH1 0\nMSTORE\nPUSH32 0x0202030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f1f\nPUSH1 32\nMSTORE\nPUSH1 32\nMLOAD",
+      "bin": "7f0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f206000527f0202030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f1f602052602051"
+    },
+    "expect": {
+      "stack": [
+        "0x202030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f1f"
+      ],
+      "success": true
+    }
+  },
+  {
     "name": "MSTORE (tail)",
     "hint": "MLOAD starts from byte offset 31 and picks up the last byte (0x20), the rest of the memory is 00",
     "code": {
