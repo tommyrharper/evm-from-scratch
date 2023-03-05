@@ -39,6 +39,8 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SHR => shr(machine),
         Opcode::SAR => sar(machine),
         Opcode::POP => pop_from_stack(machine),
+        Opcode::MLOAD => mload(machine),
+        Opcode::MSTORE => mstore(machine),
         Opcode::JUMP => jump(machine),
         Opcode::JUMPI => jumpi(machine),
         Opcode::PC => pc(machine),
@@ -486,6 +488,30 @@ fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.pop();
 
     ControlFlow::Continue(1)
+}
+
+fn mload(machine: &mut Machine) -> ControlFlow {
+    let byte_offset = machine.stack.pop().unwrap();
+
+    let res = machine.memory.get(byte_offset.as_usize());
+
+    match res {
+        Ok(result) => {
+            machine.stack.push(concat_decimals(result));
+            ControlFlow::Continue(1)
+        }
+        Err(()) => return ControlFlow::ExitError(EvmError::Unknown),
+    }
+}
+
+fn mstore(machine: &mut Machine) -> ControlFlow {
+    let byte_offset = machine.stack.pop().unwrap();
+    let value = machine.stack.pop().unwrap();
+
+    match machine.memory.set(byte_offset.as_usize(), value) {
+        Ok(()) => ControlFlow::Continue(1),
+        Err(()) => ControlFlow::ExitError(EvmError::Unknown),
+    }
 }
 
 fn jump(machine: &mut Machine) -> ControlFlow {

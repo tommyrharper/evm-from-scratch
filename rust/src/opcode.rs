@@ -28,6 +28,8 @@ impl Opcode {
     pub const SHR: u8 = 0x1c;
     pub const SAR: u8 = 0x1d;
     pub const POP: u8 = 0x50;
+    pub const MLOAD: u8 = 0x51;
+    pub const MSTORE: u8 = 0x52;
     pub const JUMP: u8 = 0x56;
     pub const JUMPI: u8 = 0x57;
     pub const PC: u8 = 0x58;
