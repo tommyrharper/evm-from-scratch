@@ -42,6 +42,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SAR => sar(machine),
         Opcode::KECCAK256 => keccak256(machine),
         Opcode::ADDRESS => address(machine),
+        Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
@@ -507,6 +508,12 @@ fn keccak256(machine: &mut Machine) -> ControlFlow {
 
 fn address(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(U256::from_big_endian(machine.address));
+
+    ControlFlow::Continue(1)
+}
+
+fn origin(machine: &mut Machine) -> ControlFlow {
+    machine.stack.push(U256::from_big_endian(machine.transaction.origin));
 
     ControlFlow::Continue(1)
 }
