@@ -1,3 +1,4 @@
+use crate::consts::WORD_BYTES;
 use crate::helpers::*;
 use crate::machine::{EvmError, Machine};
 use crate::opcode::Opcode;
@@ -41,6 +42,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
+        Opcode::MSTORE8 => mstore8(machine),
         Opcode::JUMP => jump(machine),
         Opcode::JUMPI => jumpi(machine),
         Opcode::PC => pc(machine),
@@ -508,7 +510,17 @@ fn mstore(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
     let value = machine.stack.pop().unwrap();
 
-    match machine.memory.set(byte_offset.as_usize(), value) {
+    match machine.memory.set(byte_offset.as_usize(), value, WORD_BYTES) {
+        Ok(()) => ControlFlow::Continue(1),
+        Err(()) => ControlFlow::ExitError(EvmError::Unknown),
+    }
+}
+
+fn mstore8(machine: &mut Machine) -> ControlFlow {
+    let byte_offset = machine.stack.pop().unwrap();
+    let value = machine.stack.pop().unwrap();
+
+    match machine.memory.set(byte_offset.as_usize(), value, 1) {
         Ok(()) => ControlFlow::Continue(1),
         Err(()) => ControlFlow::ExitError(EvmError::Unknown),
     }

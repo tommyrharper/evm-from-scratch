@@ -4,6 +4,7 @@ use std::{
 };
 
 use primitive_types::U256;
+use crate::consts::WORD_BYTES;
 
 pub struct Memory {
     data: Vec<u8>,
@@ -21,27 +22,23 @@ impl Memory {
 
     // fn resize() {}
 
-    // num_words_in_mem′≡max(num_words_in_mem,⌈(offset+32)÷32⌉)
+    // memory′[offset . . . (offset + 31)] ≡ value
+    // num_words_in_mem′≡max(num_words_in_mem, ceil( (offset+32)÷32 ) )
+    pub fn set(&mut self, byte_offset: usize, value: U256, target_size: usize) -> Result<(), ()> {
 
-    pub fn set(&mut self, byte_offset: usize, value: U256) -> Result<(), ()> {
-        // memory′[offset . . . (offset + 31)] ≡ value
-        // num_words_in_mem′≡max(num_words_in_mem, ceil( (offset+32)÷32 ) )
+        self.data.resize(byte_offset + target_size, 0);
 
-        self.data.resize(byte_offset + 32, 0);
-
-        for i in 0..32 {
-            let byte = value.byte(31 - i);
+        for i in 0..target_size {
+            let byte = value.byte(target_size - 1 - i);
             self.data[byte_offset + i] = byte;
         }
 
-        // (a + b - 1) / b
-
-        // self.len = max(self.len, ceil_divide(byte_offset + 32, 32.into())).into();
-        self.len = max(self.len, ceil_divide(byte_offset + 32, 32)).into();
+        self.len = max(self.len, ceil_divide(byte_offset + target_size, WORD_BYTES)).into();
 
         Ok(())
     }
 
+    // TODO: remove Result from return
     pub fn get(&mut self, byte_offset: usize) -> Result<&[u8], ()> {
         if byte_offset + 32 >= self.len {
             self.data.resize(byte_offset + 32, 0);

@@ -1,0 +1,1 @@
+pub const WORD_BYTES: usize = 32;
