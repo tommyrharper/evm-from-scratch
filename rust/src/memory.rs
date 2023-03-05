@@ -8,24 +8,24 @@ use primitive_types::U256;
 
 pub struct Memory {
     data: Vec<u8>,
-    len: usize,
+    len_words: usize,
 }
 
 impl Memory {
     pub fn new() -> Self {
         Self {
             data: Vec::new(),
-            len: 0,
+            len_words: 0,
         }
     }
 
     pub fn size(&self) -> usize {
-        self.len * WORD_BYTES
+        self.len_words * WORD_BYTES
     }
 
     fn resize(&mut self, length: usize) {
         self.data.resize(length, 0);
-        self.len = max(self.len, ceil_divide(length, WORD_BYTES)).into();
+        self.len_words = max(self.len_words, ceil_divide(length, WORD_BYTES)).into();
     }
 
     // memory′[offset . . . (offset + 31)] ≡ value
@@ -42,10 +42,11 @@ impl Memory {
     }
 
     pub fn get(&mut self, byte_offset: usize) -> &[u8] {
-        if byte_offset + 32 >= self.len {
-            self.resize(byte_offset + WORD_BYTES);
+        let end_index = byte_offset + WORD_BYTES;
+        if end_index >= self.len_words {
+            self.resize(end_index);
         }
-        &self.data[byte_offset..byte_offset + WORD_BYTES]
+        &self.data[byte_offset..end_index]
     }
 }
 
