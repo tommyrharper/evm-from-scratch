@@ -7,6 +7,7 @@ mod memory;
 mod opcode;
 mod stack;
 pub mod transaction;
+pub mod block;
 
 
 use crate::transaction::Transaction;
