@@ -8,7 +8,6 @@ use crate::consts::WORD_BYTES;
 
 pub struct Memory {
     data: Vec<u8>,
-    // len: U256,
     len: usize,
 }
 
@@ -39,12 +38,11 @@ impl Memory {
     }
 
     // TODO: remove Result from return
-    pub fn get(&mut self, byte_offset: usize) -> Result<&[u8], ()> {
+    pub fn get(&mut self, byte_offset: usize) -> &[u8] {
         if byte_offset + 32 >= self.len {
-            self.data.resize(byte_offset + 32, 0);
+            self.data.resize(byte_offset + WORD_BYTES, 0);
         }
-        let slice = &self.data[byte_offset..byte_offset + 32];
-        Ok(slice)
+        &self.data[byte_offset..byte_offset + WORD_BYTES]
     }
 }
 

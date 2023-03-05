@@ -497,20 +497,18 @@ fn mload(machine: &mut Machine) -> ControlFlow {
 
     let res = machine.memory.get(byte_offset.as_usize());
 
-    match res {
-        Ok(result) => {
-            machine.stack.push(concat_decimals(result));
-            ControlFlow::Continue(1)
-        }
-        Err(()) => return ControlFlow::ExitError(EvmError::Unknown),
-    }
+    machine.stack.push(concat_decimals(res));
+    ControlFlow::Continue(1)
 }
 
 fn mstore(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
     let value = machine.stack.pop().unwrap();
 
-    match machine.memory.set(byte_offset.as_usize(), value, WORD_BYTES) {
+    match machine
+        .memory
+        .set(byte_offset.as_usize(), value, WORD_BYTES)
+    {
         Ok(()) => ControlFlow::Continue(1),
         Err(()) => ControlFlow::ExitError(EvmError::Unknown),
     }
