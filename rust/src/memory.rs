@@ -1,9 +1,4 @@
-use std::{
-    cmp::max,
-    ops::{Add, Div, Sub},
-};
-
-use crate::consts::WORD_BYTES;
+use crate::{consts::WORD_BYTES, helpers::ceil_divide};
 use primitive_types::U256;
 
 pub struct Memory {
@@ -47,42 +42,5 @@ impl Memory {
         let end_index = byte_offset + WORD_BYTES;
         self.resize(end_index);
         &self.data[byte_offset..end_index]
-    }
-}
-
-// TODO: clean up this mess 🤦‍♂️
-fn ceil_divide<T: Int>(a: T, b: T) -> T {
-    (a + b - T::one()) / b
-}
-
-trait Int: Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> + PartialEq + Copy {
-    fn zero() -> Self;
-    fn one() -> Self;
-}
-
-impl Int for U256 {
-    fn zero() -> Self {
-        U256::zero()
-    }
-    fn one() -> Self {
-        U256::one()
-    }
-}
-
-impl Int for usize {
-    fn zero() -> Self {
-        0
-    }
-    fn one() -> Self {
-        1
-    }
-}
-
-impl Int for u32 {
-    fn zero() -> Self {
-        0
-    }
-    fn one() -> Self {
-        1
     }
 }

@@ -1,3 +1,5 @@
+use std::ops::{Add, Sub, Div};
+
 use primitive_types::U256;
 
 // TODO: remove manual impl to use :x?
@@ -34,4 +36,40 @@ pub fn is_negative(x: U256) -> bool {
     // check the first bit, if it is 1, it is negative
     // according to the rules of twos_compliment
     x.bit(255)
+}
+
+pub fn ceil_divide<T: Int>(a: T, b: T) -> T {
+    (a + b - T::one()) / b
+}
+
+pub trait Int: Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> + PartialEq + Copy {
+    fn zero() -> Self;
+    fn one() -> Self;
+}
+
+impl Int for U256 {
+    fn zero() -> Self {
+        U256::zero()
+    }
+    fn one() -> Self {
+        U256::one()
+    }
+}
+
+impl Int for usize {
+    fn zero() -> Self {
+        0
+    }
+    fn one() -> Self {
+        1
+    }
+}
+
+impl Int for u32 {
+    fn zero() -> Self {
+        0
+    }
+    fn one() -> Self {
+        1
+    }
 }
