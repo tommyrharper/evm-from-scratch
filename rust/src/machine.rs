@@ -38,15 +38,13 @@ impl<'a> Machine<'a> {
     pub fn new(
         code: &'a [u8],
         address: &'a [u8],
-        caller: &'a [u8],
-        origin: &'a [u8],
-        gasprice: &'a [u8],
+        transaction: Transaction<'a>
     ) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
             jump_map: JumpMap::new(code),
-            transaction: Transaction::new(caller, origin, gasprice),
+            transaction,
             address,
             code,
             pc: 0,

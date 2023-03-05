@@ -15,6 +15,7 @@
 use evm::evm;
 use primitive_types::U256;
 use serde::Deserialize;
+use evm::transaction::Transaction;
 
 #[derive(Debug, Deserialize)]
 struct Evmtest {
@@ -88,7 +89,11 @@ fn main() {
             None => vec![],
         };
 
-        let result = evm(&code, &address, &caller, &origin, &gasprice);
+        let result = evm(
+            &code,
+            &address,
+            Transaction::new(&caller, &origin, &gasprice),
+        );
 
         let mut expected_stack: Vec<U256> = Vec::new();
         if let Some(ref stacks) = test.expect.stack {
