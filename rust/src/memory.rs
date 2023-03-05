@@ -3,8 +3,8 @@ use std::{
     ops::{Add, Div, Sub},
 };
 
-use primitive_types::U256;
 use crate::consts::WORD_BYTES;
+use primitive_types::U256;
 
 pub struct Memory {
     data: Vec<u8>,
@@ -19,13 +19,14 @@ impl Memory {
         }
     }
 
-    // fn resize() {}
+    fn resize(&mut self, length: usize) {
+        self.data.resize(length, 0);
+    }
 
     // memory′[offset . . . (offset + 31)] ≡ value
     // num_words_in_mem′≡max(num_words_in_mem, ceil( (offset+32)÷32 ) )
     pub fn set(&mut self, byte_offset: usize, value: U256, target_size: usize) -> Result<(), ()> {
-
-        self.data.resize(byte_offset + target_size, 0);
+        self.resize(byte_offset + target_size);
 
         for i in 0..target_size {
             let byte = value.byte(target_size - 1 - i);
@@ -40,7 +41,7 @@ impl Memory {
     // TODO: remove Result from return
     pub fn get(&mut self, byte_offset: usize) -> &[u8] {
         if byte_offset + 32 >= self.len {
-            self.data.resize(byte_offset + WORD_BYTES, 0);
+            self.resize(byte_offset + WORD_BYTES);
         }
         &self.data[byte_offset..byte_offset + WORD_BYTES]
     }
