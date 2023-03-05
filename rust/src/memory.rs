@@ -38,8 +38,8 @@ impl Memory {
         Ok(())
     }
 
-    pub fn get(&mut self, byte_offset: usize) -> &[u8] {
-        let end_index = byte_offset + WORD_BYTES;
+    pub fn get(&mut self, byte_offset: usize, target_size: usize) -> &[u8] {
+        let end_index = byte_offset + target_size;
         self.resize(end_index);
         &self.data[byte_offset..end_index]
     }

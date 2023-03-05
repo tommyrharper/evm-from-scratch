@@ -3,6 +3,7 @@ use crate::helpers::*;
 use crate::machine::{EvmError, Machine};
 use crate::opcode::Opcode;
 use primitive_types::U256;
+use sha3::{Digest, Keccak256};
 
 pub enum ControlFlow {
     Continue(usize),
@@ -39,6 +40,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SHL => shl(machine),
         Opcode::SHR => shr(machine),
         Opcode::SAR => sar(machine),
+        Opcode::KECCAK256 => keccak256(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
@@ -56,6 +58,8 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         _ => ControlFlow::ExitError(EvmError::InvalidInstruction),
     }
 }
+
+// TODO: remove unwraps and handle failed stack pops
 
 fn stop(_machine: &mut Machine) -> ControlFlow {
     ControlFlow::Exit
@@ -487,6 +491,18 @@ fn sar(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+fn keccak256(machine: &mut Machine) -> ControlFlow {
+    let offset = machine.stack.pop().unwrap();
+    let size = machine.stack.pop().unwrap();
+
+    let data_to_hash = machine.memory.get(offset.as_usize(), size.as_usize());
+	let hashed_data = Keccak256::digest(data_to_hash);
+
+    machine.stack.push(U256::from_big_endian(&hashed_data));
+
+    ControlFlow::Continue(1)
+}
+
 fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
     machine.stack.pop();
 
@@ -496,7 +512,7 @@ fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
 fn mload(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
 
-    let res = machine.memory.get(byte_offset.as_usize());
+    let res = machine.memory.get(byte_offset.as_usize(), WORD_BYTES);
 
     machine.stack.push(concat_decimals(res));
     ControlFlow::Continue(1)
