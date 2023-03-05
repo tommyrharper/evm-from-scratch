@@ -28,6 +28,7 @@ struct Evmtest {
 #[derive(Debug, Deserialize)]
 struct Tx {
     to: Option<String>,
+    from: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -61,8 +62,15 @@ fn main() {
             },
             None => vec![],
         };
+        let from_address = match &test.tx {
+            Some(tx) => match &tx.from {
+                Some(from) => hex::decode(from[2..from.len()].to_string()).unwrap(),
+                None => vec![],
+            },
+            None => vec![],
+        };
 
-        let result = evm(&code, &address);
+        let result = evm(&code, &address, &from_address);
 
         let mut expected_stack: Vec<U256> = Vec::new();
         if let Some(ref stacks) = test.expect.stack {
