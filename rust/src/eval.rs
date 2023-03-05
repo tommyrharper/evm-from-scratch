@@ -41,6 +41,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SHR => shr(machine),
         Opcode::SAR => sar(machine),
         Opcode::KECCAK256 => keccak256(machine),
+        Opcode::ADDRESS => address(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
@@ -499,6 +500,12 @@ fn keccak256(machine: &mut Machine) -> ControlFlow {
 	let hashed_data = Keccak256::digest(data_to_hash);
 
     machine.stack.push(U256::from_big_endian(&hashed_data));
+
+    ControlFlow::Continue(1)
+}
+
+fn address(machine: &mut Machine) -> ControlFlow {
+    machine.stack.push(U256::from_big_endian(machine.address));
 
     ControlFlow::Continue(1)
 }

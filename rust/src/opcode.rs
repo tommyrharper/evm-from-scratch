@@ -28,6 +28,7 @@ impl Opcode {
     pub const SHR: u8 = 0x1c;
     pub const SAR: u8 = 0x1d;
     pub const KECCAK256: u8 = 0x20;
+    pub const ADDRESS: u8 = 0x30;
     pub const POP: u8 = 0x50;
     pub const MLOAD: u8 = 0x51;
     pub const MSTORE: u8 = 0x52;
