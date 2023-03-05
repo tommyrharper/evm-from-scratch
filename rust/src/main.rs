@@ -62,7 +62,7 @@ fn main() {
             },
             None => vec![],
         };
-        let from_address = match &test.tx {
+        let caller = match &test.tx {
             Some(tx) => match &tx.from {
                 Some(from) => hex::decode(from[2..from.len()].to_string()).unwrap(),
                 None => vec![],
@@ -70,7 +70,7 @@ fn main() {
             None => vec![],
         };
 
-        let result = evm(&code, &address, &from_address);
+        let result = evm(&code, &address, &caller);
 
         let mut expected_stack: Vec<U256> = Vec::new();
         if let Some(ref stacks) = test.expect.stack {

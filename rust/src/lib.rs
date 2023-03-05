@@ -10,7 +10,7 @@ mod consts;
 use crate::machine::Machine;
 use crate::machine::EvmResult;
 
-pub fn evm(code: impl AsRef<[u8]>, address: impl AsRef<[u8]>, from_address: impl AsRef<[u8]>) -> EvmResult {
-    let mut machine: Machine = Machine::new(code.as_ref(), address.as_ref(), from_address.as_ref());
+pub fn evm(code: impl AsRef<[u8]>, address: impl AsRef<[u8]>, caller: impl AsRef<[u8]>) -> EvmResult {
+    let mut machine: Machine = Machine::new(code.as_ref(), address.as_ref(), caller.as_ref());
     return machine.execute();
 }
