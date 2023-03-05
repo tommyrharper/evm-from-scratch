@@ -1,5 +1,7 @@
 use primitive_types::U256;
 
+// TODO: remove manual impl to use :x?
+// https://stackoverflow.com/questions/27650312/show-u8-slice-in-hex-representation
 pub fn concat_decimals(arr: &[u8]) -> U256 {
     let hexadecimal_concat: String = arr
         .iter()
