@@ -526,17 +526,10 @@ fn address(machine: &mut Machine) -> ControlFlow {
 
 fn balance(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap();
-    let address_string = format!{"{:X}", address};
-    let balance = machine.environment.state.0.get(&address_string);
-
-    let balance_uint = match balance {
-        Some(account) => account.balance,
-        None => &[0],
-    };
 
     machine
         .stack
-        .push(U256::from_big_endian(balance_uint));
+        .push(machine.environment.state.get_account_balance(address));
 
     ControlFlow::Continue(1)
 }

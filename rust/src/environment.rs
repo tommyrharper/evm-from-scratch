@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use primitive_types::U256;
+
 #[derive(Debug)]
 pub struct Account<'a> {
     pub balance: &'a [u8],
@@ -27,6 +29,18 @@ impl<'a> State<'a> {
 
     pub fn add_account(&mut self, address: &'a String, balance: &'a [u8]) {
         self.0.insert(address, Account::new(balance));
+    }
+
+    pub fn get_account_balance(&self, address: U256) -> U256 {
+        let address_string = format!{"{:X}", address};
+        let balance = self.0.get(&address_string);
+    
+        let balance_uint = match balance {
+            Some(account) => account.balance,
+            None => &[0],
+        };
+
+        U256::from_big_endian(balance_uint)
     }
 }
 
