@@ -61,6 +61,16 @@ struct Expect {
     // ret: Option<String>,
 }
 
+pub fn hex_decode_with_prefix(data: &String) -> Vec<u8> {
+    let slice = &data[2..data.len()];
+    let mut res = String::new();
+    if slice.len() % 2 == 1 {
+        res.push('0');
+    }
+    res.push_str(slice);
+    hex::decode(res).unwrap()
+}
+
 fn main() {
     let text = std::fs::read_to_string("../evm.json").unwrap();
     let data: Vec<Evmtest> = serde_json::from_str(&text).unwrap();
@@ -75,87 +85,77 @@ fn main() {
         // TODO: update to use macro here
         let address = match &test.tx {
             Some(tx) => match &tx.to {
-                Some(to) => hex::decode(to[2..to.len()].to_string()).unwrap(),
+                Some(to) => hex_decode_with_prefix(to),
                 None => vec![],
             },
             None => vec![],
         };
         let caller = match &test.tx {
             Some(tx) => match &tx.from {
-                Some(from) => hex::decode(from[2..from.len()].to_string()).unwrap(),
+                Some(from) => hex_decode_with_prefix(from),
                 None => vec![],
             },
             None => vec![],
         };
         let origin = match &test.tx {
             Some(tx) => match &tx.origin {
-                Some(origin) => hex::decode(origin[2..origin.len()].to_string()).unwrap(),
+                Some(origin) => hex_decode_with_prefix(origin),
                 None => vec![],
             },
             None => vec![],
         };
         let gasprice = match &test.tx {
             Some(tx) => match &tx.gasprice {
-                Some(gasprice) => hex::decode(gasprice[2..gasprice.len()].to_string()).unwrap(),
+                Some(gasprice) => hex_decode_with_prefix(gasprice),
                 None => vec![],
             },
             None => vec![],
         };
         let basefee = match &test.block {
             Some(tx) => match &tx.basefee {
-                Some(basefee) => {
-                    let slice = &basefee[2..basefee.len()];
-                    let mut res = String::new();
-                    if slice.len() % 2 == 1 {
-                        res.push('0');
-                    }
-                    res.push_str(slice);
-                    hex::decode(res).unwrap()
-                }
+                Some(basefee) => hex_decode_with_prefix(basefee),
                 None => vec![],
             },
             None => vec![],
         };
         let coinbase = match &test.block {
             Some(tx) => match &tx.coinbase {
-                Some(coinbase) => hex::decode(coinbase[2..coinbase.len()].to_string()).unwrap(),
+                Some(coinbase) => hex_decode_with_prefix(coinbase),
                 None => vec![],
             },
             None => vec![],
         };
         let timestamp = match &test.block {
             Some(tx) => match &tx.timestamp {
-                Some(timestamp) => hex::decode(timestamp[2..timestamp.len()].to_string()).unwrap(),
+                Some(timestamp) => hex_decode_with_prefix(timestamp),
                 None => vec![],
             },
             None => vec![],
         };
         let number = match &test.block {
             Some(tx) => match &tx.number {
-                Some(number) => hex::decode(number[2..number.len()].to_string()).unwrap(),
+                Some(number) => hex_decode_with_prefix(number),
                 None => vec![],
             },
             None => vec![],
         };
         let difficulty = match &test.block {
             Some(tx) => match &tx.difficulty {
-                Some(difficulty) => {
-                    hex::decode(difficulty[2..difficulty.len()].to_string()).unwrap()
-                }
+                Some(difficulty) => hex_decode_with_prefix(difficulty),
                 None => vec![],
             },
             None => vec![],
         };
         let gaslimit = match &test.block {
             Some(tx) => match &tx.gaslimit {
-                Some(gaslimit) => hex::decode(gaslimit[2..gaslimit.len()].to_string()).unwrap(),
+                Some(gaslimit) => hex_decode_with_prefix(gaslimit),
                 None => vec![],
             },
             None => vec![],
         };
         let chainid = match &test.block {
             Some(tx) => match &tx.chainid {
-                Some(chainid) => hex::decode(chainid[2..chainid.len()].to_string()).unwrap(),
+                Some(chainid) => hex_decode_with_prefix(chainid),
                 None => vec![],
             },
             None => vec![],
