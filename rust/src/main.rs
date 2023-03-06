@@ -54,6 +54,26 @@ struct BlockData {
 #[derive(Debug, Deserialize)]
 struct StateData(HashMap<String, AccountData>);
 
+impl StateData {
+    pub fn new() -> Self {
+        Self(HashMap::new())
+    }
+
+    pub fn get_address_balance_vecs(&self) -> Vec<(Vec<u8>, Vec<u8>)> {
+        let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = self
+            .0
+            .iter()
+            .map(|(address, account_data)| {
+                (
+                    hex_decode_with_prefix(address),
+                    account_data.hex_decode_balance(),
+                )
+            })
+            .collect();
+        address_balances_vecs
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 struct AccountData {
     balance: Option<String>,
@@ -182,19 +202,10 @@ fn main() {
             None => vec![],
         };
 
-        let default = HashMap::<String, AccountData>::new();
-
         let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = match &test.state {
-            Some(state) => state.0.iter(),
-            None => default.iter(),
-        }
-        .map(|(address, account_data)| {
-            (
-                hex_decode_with_prefix(address),
-                account_data.hex_decode_balance(),
-            )
-        })
-        .collect();
+            Some(state) => state.get_address_balance_vecs(),
+            None => StateData::new().get_address_balance_vecs(),
+        };
 
         let address_balances_arrays: Vec<(&[u8], &[u8])> = address_balances_vecs
             .iter()
