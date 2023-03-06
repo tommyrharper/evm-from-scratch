@@ -59,6 +59,7 @@ impl StateData {
         Self(HashMap::new())
     }
 
+    // TODO: clean up mess
     pub fn get_address_balances(
         address_balances_vecs: &Vec<(Vec<u8>, Vec<u8>)>,
     ) -> Vec<(&[u8], &[u8])> {
@@ -68,6 +69,7 @@ impl StateData {
             .collect()
     }
 
+    // TODO: clean up mess
     pub fn get_address_balance_vecs(&self) -> Vec<(Vec<u8>, Vec<u8>)> {
         let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = self
             .0
