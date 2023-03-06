@@ -184,28 +184,26 @@ fn main() {
 
         let default = HashMap::<String, AccountData>::new();
 
-        let state_iter_address_vec_account_balance_vec_u8: Vec<(Vec<u8>, Vec<u8>)> =
-            match &test.state {
-                Some(state) => state.0.iter(),
-                None => default.iter(),
-            }
-            .map(|(address, account_data)| {
-                (
-                    hex_decode_with_prefix(address),
-                    account_data.hex_decode_balance(),
-                )
-            })
-            .collect();
+        let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = match &test.state {
+            Some(state) => state.0.iter(),
+            None => default.iter(),
+        }
+        .map(|(address, account_data)| {
+            (
+                hex_decode_with_prefix(address),
+                account_data.hex_decode_balance(),
+            )
+        })
+        .collect();
 
-        let state_iter_address_vec_account_balance_vec_u8_arrays: Vec<(&[u8], &[u8])> =
-            state_iter_address_vec_account_balance_vec_u8
-                .iter()
-                .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
-                .collect();
+        let address_balances_arrays: Vec<(&[u8], &[u8])> = address_balances_vecs
+            .iter()
+            .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
+            .collect();
 
         let mut state: State = State::new();
 
-        state.add_accounts(&state_iter_address_vec_account_balance_vec_u8_arrays);
+        state.add_accounts(&address_balances_arrays);
 
         let result = evm(
             &code,
