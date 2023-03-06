@@ -24,11 +24,12 @@ pub enum ExitSuccess {
     Return(U256),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum EvmError {
     StackUnderflow,
     InvalidInstruction,
     InvalidJump,
+    Revert(U256),
 }
 
 enum EvmStatus {
@@ -137,7 +138,7 @@ impl<'a> Machine<'a> {
                                 logs: self.logs.clone(),
                                 return_val: Some(val),
                             }
-                        },
+                        }
                     },
                     ExitReason::Error(error) => {
                         return EvmResult {
@@ -145,7 +146,10 @@ impl<'a> Machine<'a> {
                             success: false,
                             error: Some(error),
                             logs: self.logs.clone(),
-                            return_val: None,
+                            return_val: match &error {
+                                EvmError::Revert(val) => Some(*val),
+                                _ => None,
+                            },
                         }
                     }
                 },

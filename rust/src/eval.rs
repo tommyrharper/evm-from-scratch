@@ -75,6 +75,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::LOG0..=Opcode::LOG4 => log(machine),
         Opcode::RETURN => eval_return(machine),
         Opcode::INVALID => invalid(machine),
+        Opcode::REVERT => revert(machine),
         _ => exit_error(EvmError::InvalidInstruction),
     }
 }
@@ -921,6 +922,15 @@ fn eval_return(machine: &mut Machine) -> ControlFlow {
     let res = machine.memory.get(offset, size);
 
     exit_success(ExitSuccess::Return(U256::from_big_endian(res)))
+}
+
+fn revert(machine: &mut Machine) -> ControlFlow {
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let res = machine.memory.get(offset, size);
+
+    exit_error(EvmError::Revert(U256::from_big_endian(res)))
 }
 
 fn invalid(_machine: &mut Machine) -> ControlFlow {
