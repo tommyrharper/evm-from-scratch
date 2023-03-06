@@ -3,11 +3,26 @@ use std::collections::HashMap;
 use crate::block::Block;
 use crate::environment::Environment;
 use crate::eval::eval;
-use crate::eval::ControlFlow;
 use crate::jump_map::JumpMap;
 use crate::memory::Memory;
 use crate::stack::Stack;
 use primitive_types::U256;
+
+pub enum ControlFlow {
+    Continue(usize),
+    Jump(usize),
+    Exit(ExitReason),
+}
+
+pub enum ExitReason {
+    Error(EvmError),
+    Success(ExitSuccess),
+}
+
+pub enum ExitSuccess {
+    Stop,
+    Return,
+}
 
 #[derive(Debug)]
 pub enum EvmError {
@@ -18,7 +33,7 @@ pub enum EvmError {
 
 enum EvmStatus {
     Running,
-    Exited,
+    Exited(ExitReason),
 }
 
 pub struct EvmResult {
@@ -92,36 +107,38 @@ impl<'a> Machine<'a> {
         self.code[self.pc]
     }
 
-    fn step(&mut self) -> Result<EvmStatus, EvmError> {
+    fn step(&mut self) -> EvmStatus {
         match eval(self) {
             ControlFlow::Continue(steps) => {
                 self.pc += steps;
-                Ok(EvmStatus::Running)
+                EvmStatus::Running
             }
             ControlFlow::Jump(position) => {
                 self.pc = position;
-                Ok(EvmStatus::Running)
+                EvmStatus::Running
             }
-            ControlFlow::Exit => Ok(EvmStatus::Exited),
-            ControlFlow::ExitError(err) => Err(err),
+            ControlFlow::Exit(reason) => EvmStatus::Exited(reason),
         }
     }
 
     pub fn execute(&mut self) -> EvmResult {
         while self.pc < self.code.len() {
             match self.step() {
-                Ok(status) => match status {
-                    EvmStatus::Running => continue,
-                    EvmStatus::Exited => break,
-                },
-                Err(error) => {
-                    return EvmResult {
-                        stack: self.stack(),
-                        success: false,
-                        error: Some(error),
-                        logs: self.logs.clone(),
+                EvmStatus::Running => continue,
+                EvmStatus::Exited(reason) => match reason {
+                    ExitReason::Success(success) => match success {
+                        ExitSuccess::Stop => break,
+                        ExitSuccess::Return => break,
+                    },
+                    ExitReason::Error(error) => {
+                        return EvmResult {
+                            stack: self.stack(),
+                            success: false,
+                            error: Some(error),
+                            logs: self.logs.clone(),
+                        }
                     }
-                }
+                },
             }
         }
 

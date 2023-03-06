@@ -1,6 +1,13 @@
-use std::ops::{Add, Sub, Div};
-
+use std::ops::{Add, Div, Sub};
 use primitive_types::U256;
+use crate::machine::{ControlFlow, EvmError, ExitReason, ExitSuccess};
+
+pub fn exit_error(err: EvmError) -> ControlFlow {
+    ControlFlow::Exit(ExitReason::Error(err))
+}
+pub fn exit_success(success: ExitSuccess) -> ControlFlow {
+    ControlFlow::Exit(ExitReason::Success(success))
+}
 
 pub fn arr_slice_extend(arr: &[u8], offset: usize, size: usize) -> U256 {
     let mut res = vec![0; size];
@@ -36,7 +43,9 @@ pub fn ceil_divide<T: Int>(a: T, b: T) -> T {
     (a + b - T::one()) / b
 }
 
-pub trait Int: Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> + PartialEq + Copy {
+pub trait Int:
+    Add<Output = Self> + Sub<Output = Self> + Div<Output = Self> + PartialEq + Copy
+{
     fn zero() -> Self;
     fn one() -> Self;
 }

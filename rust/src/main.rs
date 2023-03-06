@@ -115,7 +115,7 @@ impl AccountData {
 
 #[derive(Debug, Deserialize, Clone)]
 struct CodeState {
-    asm: Option<String>,
+    // asm: Option<String>,
     bin: Option<String>,
 }
 

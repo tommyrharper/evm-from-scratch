@@ -1,16 +1,9 @@
 use crate::consts::WORD_BYTES;
 use crate::helpers::*;
-use crate::machine::{EvmError, Log, Machine};
+use crate::machine::{ControlFlow, EvmError, ExitSuccess, Log, Machine};
 use crate::opcode::Opcode;
 use primitive_types::U256;
 use sha3::{Digest, Keccak256};
-
-pub enum ControlFlow {
-    Continue(usize),
-    Jump(usize),
-    ExitError(EvmError),
-    Exit,
-}
 
 pub fn eval(machine: &mut Machine) -> ControlFlow {
     match machine.opcode() {
@@ -64,7 +57,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CHAINID => chainid(machine),
         Opcode::SELFBALANCE => selfbalance(machine),
         Opcode::BASEFEE => basefee(machine),
-        Opcode::POP => pop_from_stack(machine),
+        Opcode::POP => eval_pop(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
         Opcode::SLOAD => sload(machine),
@@ -76,19 +69,20 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::MSIZE => msize(machine),
         Opcode::GAS => gas(machine),
         Opcode::JUMPDEST => jumpdest(machine),
-        Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
+        Opcode::PUSH1..=Opcode::PUSH32 => eval_push(machine),
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
         Opcode::LOG0..=Opcode::LOG4 => log(machine),
+        Opcode::RETURN => eval_return(machine),
         Opcode::INVALID => invalid(machine),
-        _ => ControlFlow::ExitError(EvmError::InvalidInstruction),
+        _ => exit_error(EvmError::InvalidInstruction),
     }
 }
 
 // TODO: remove unwraps and handle failed stack pops
 
 fn stop(_machine: &mut Machine) -> ControlFlow {
-    ControlFlow::Exit
+    exit_success(ExitSuccess::Stop)
 }
 
 fn add(machine: &mut Machine) -> ControlFlow {
@@ -744,7 +738,7 @@ fn basefee(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-fn pop_from_stack(machine: &mut Machine) -> ControlFlow {
+fn eval_pop(machine: &mut Machine) -> ControlFlow {
     machine.stack.pop();
 
     ControlFlow::Continue(1)
@@ -808,7 +802,7 @@ fn jump(machine: &mut Machine) -> ControlFlow {
     if is_valid {
         ControlFlow::Jump(a.as_usize())
     } else {
-        ControlFlow::ExitError(EvmError::InvalidJump)
+        exit_error(EvmError::InvalidJump)
     }
 }
 
@@ -825,7 +819,7 @@ fn jumpi(machine: &mut Machine) -> ControlFlow {
     if is_valid {
         ControlFlow::Jump(jump_to.as_usize())
     } else {
-        ControlFlow::ExitError(EvmError::InvalidJump)
+        exit_error(EvmError::InvalidJump)
     }
 }
 
@@ -852,7 +846,7 @@ fn jumpdest(_machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-fn push_on_to_stack(machine: &mut Machine) -> ControlFlow {
+fn eval_push(machine: &mut Machine) -> ControlFlow {
     let n = usize::from(machine.opcode() - (Opcode::PUSH1 - 1));
     let start = machine.pc + 1;
     let end = start + n;
@@ -870,7 +864,7 @@ fn dup(machine: &mut Machine) -> ControlFlow {
 
     match a {
         Ok(val) => machine.stack.push(val),
-        Err(error) => return ControlFlow::ExitError(error),
+        Err(error) => return exit_error(error),
     }
 
     ControlFlow::Continue(1)
@@ -881,20 +875,20 @@ fn swap(machine: &mut Machine) -> ControlFlow {
 
     let a = match machine.stack.peek(0) {
         Ok(val) => val,
-        Err(err) => return ControlFlow::ExitError(err),
+        Err(err) => return exit_error(err),
     };
     let b = match machine.stack.peek(n) {
         Ok(val) => val,
-        Err(err) => return ControlFlow::ExitError(err),
+        Err(err) => return exit_error(err),
     };
 
     match machine.stack.set(a, n) {
         Ok(()) => (),
-        Err(err) => return ControlFlow::ExitError(err),
+        Err(err) => return exit_error(err),
     }
     match machine.stack.set(b, 0) {
         Ok(()) => (),
-        Err(err) => return ControlFlow::ExitError(err),
+        Err(err) => return exit_error(err),
     }
 
     ControlFlow::Continue(1)
@@ -920,6 +914,15 @@ fn log(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+fn eval_return(machine: &mut Machine) -> ControlFlow {
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let _res = machine.memory.get(offset, size);
+
+    exit_success(ExitSuccess::Return)
+}
+
 fn invalid(_machine: &mut Machine) -> ControlFlow {
-    ControlFlow::ExitError(EvmError::InvalidInstruction)
+    exit_error(EvmError::InvalidInstruction)
 }
