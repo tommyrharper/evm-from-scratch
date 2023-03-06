@@ -29,6 +29,7 @@ impl Opcode {
     pub const SAR: u8 = 0x1d;
     pub const KECCAK256: u8 = 0x20;
     pub const ADDRESS: u8 = 0x30;
+    pub const BALANCE: u8 = 0x31;
     pub const ORIGIN: u8 = 0x32;
     pub const CALLER: u8 = 0x33;
     pub const GASPRICE: u8 = 0x3a;

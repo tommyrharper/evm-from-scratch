@@ -42,6 +42,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::SAR => sar(machine),
         Opcode::KECCAK256 => keccak256(machine),
         Opcode::ADDRESS => address(machine),
+        Opcode::BALANCE => balance(machine),
         Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
         Opcode::BLOCKHASH => blockhash(machine),
@@ -519,6 +520,23 @@ fn address(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.environment.address));
+
+    ControlFlow::Continue(1)
+}
+
+fn balance(machine: &mut Machine) -> ControlFlow {
+    let address = machine.stack.pop().unwrap();
+    let address_string = format!{"{:X}", address};
+    let balance = machine.environment.state.0.get(&address_string);
+
+    let balance_uint = match balance {
+        Some(account) => account.balance,
+        None => &[0],
+    };
+
+    machine
+        .stack
+        .push(U256::from_big_endian(balance_uint));
 
     ControlFlow::Continue(1)
 }
