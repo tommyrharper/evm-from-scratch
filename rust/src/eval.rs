@@ -539,7 +539,7 @@ fn caller(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-fn blockhash(machine: &mut Machine) -> ControlFlow {
+fn blockhash(_machine: &mut Machine) -> ControlFlow {
     // TODO: implement blockhash properly
     ControlFlow::Continue(1)
 }
