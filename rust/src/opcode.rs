@@ -32,6 +32,7 @@ impl Opcode {
     pub const ORIGIN: u8 = 0x32;
     pub const CALLER: u8 = 0x33;
     pub const GASPRICE: u8 = 0x3a;
+    pub const BLOCKHASH: u8 = 0x40;
     pub const COINBASE: u8 = 0x41;
     pub const TIMESTAMP: u8 = 0x42;
     pub const NUMBER: u8 = 0x43;

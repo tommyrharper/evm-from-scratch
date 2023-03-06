@@ -44,6 +44,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::ADDRESS => address(machine),
         Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
+        Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
         Opcode::TIMESTAMP => timestamp(machine),
@@ -536,7 +537,13 @@ fn caller(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+fn blockhash(machine: &mut Machine) -> ControlFlow {
+    // TODO: implement blockhash properly
+    ControlFlow::Continue(1)
+}
+
 fn gasprice(machine: &mut Machine) -> ControlFlow {
+    // TODO: implement gas price properly
     machine
         .stack
         .push(U256::from_big_endian(machine.transaction.gasprice));
