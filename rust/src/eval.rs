@@ -50,6 +50,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CALLDATASIZE => calldatasize(machine),
         Opcode::CALLDATACOPY => calldatacopy(machine),
         Opcode::CODESIZE => codesize(machine),
+        Opcode::CODECOPY => codecopy(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
@@ -581,6 +582,7 @@ fn calldatasize(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+// TODO: move all possible .as_usize()'s to the initial values
 fn calldatacopy(machine: &mut Machine) -> ControlFlow {
     let dest_offset = machine.stack.pop().unwrap();
     let offset = machine.stack.pop().unwrap();
@@ -599,6 +601,20 @@ fn calldatacopy(machine: &mut Machine) -> ControlFlow {
 
 fn codesize(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(machine.code.len().into());
+
+    ControlFlow::Continue(1)
+}
+
+fn codecopy(machine: &mut Machine) -> ControlFlow {
+    let dest_offset = machine.stack.pop().unwrap().as_usize();
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let code = machine.code_slice(offset, size);
+
+    machine
+        .memory
+        .set(dest_offset, code, size);
 
     ControlFlow::Continue(1)
 }
