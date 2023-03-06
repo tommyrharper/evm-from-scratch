@@ -45,6 +45,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::BALANCE => balance(machine),
         Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
+        Opcode::CALLVALUE => callvalue(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
@@ -546,6 +547,14 @@ fn caller(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.environment.caller));
+
+    ControlFlow::Continue(1)
+}
+
+fn callvalue(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.environment.value));
 
     ControlFlow::Continue(1)
 }

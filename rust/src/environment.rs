@@ -32,9 +32,9 @@ impl<'a> State<'a> {
     }
 
     pub fn get_account_balance(&self, address: U256) -> U256 {
-        let address_string = format!{"{:X}", address};
+        let address_string = format! {"{:X}", address};
         let balance = self.0.get(&address_string);
-    
+
         let balance_uint = match balance {
             Some(account) => account.balance,
             None => &[0],
@@ -49,6 +49,7 @@ pub struct Environment<'a> {
     pub caller: &'a [u8],
     pub origin: &'a [u8],
     pub gasprice: &'a [u8],
+    pub value: &'a [u8],
     pub state: State<'a>,
 }
 
@@ -58,6 +59,7 @@ impl<'a> Environment<'a> {
         caller: &'a [u8],
         origin: &'a [u8],
         gasprice: &'a [u8],
+        value: &'a [u8],
         state: State<'a>,
     ) -> Self {
         Self {
@@ -65,6 +67,7 @@ impl<'a> Environment<'a> {
             caller,
             origin,
             gasprice,
+            value,
             state,
         }
     }
