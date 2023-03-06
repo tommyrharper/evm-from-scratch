@@ -62,23 +62,24 @@ impl StateData {
     }
 
     // TODO: clean up mess
-    pub fn get_address_balances(
-        address_balances_vecs: &Vec<(String, Vec<u8>)>,
-    ) -> Vec<(&String, &[u8])> {
+    pub fn account_data(
+        address_balances_vecs: &Vec<(String, Vec<u8>, Vec<u8>)>,
+    ) -> Vec<(&String, &[u8], &[u8])> {
         address_balances_vecs
             .iter()
-            .map(|(address, balance)| (address, balance.as_slice()))
+            .map(|(address, balance, code)| (address, balance.as_slice(), code.as_slice()))
             .collect()
     }
 
     // TODO: clean up mess
-    pub fn get_address_balance_vecs(&self) -> Vec<(String, Vec<u8>)> {
+    pub fn account_data_vecs(&self) -> Vec<(String, Vec<u8>, Vec<u8>)> {
         self.0
             .iter()
             .map(|(address, account_data)| {
                 (
                     address[2..].to_string().to_uppercase(),
                     account_data.hex_decode_balance(),
+                    account_data.hex_decode_code(),
                 )
             })
             .collect()
@@ -88,15 +89,34 @@ impl StateData {
 #[derive(Debug, Deserialize, Clone)]
 struct AccountData {
     balance: Option<String>,
+    code: Option<CodeState>,
 }
 
 impl AccountData {
     pub fn hex_decode_balance(&self) -> Vec<u8> {
         match &self.balance {
             Some(balance) => hex_decode_with_prefix(&balance),
-            None => hex_decode_with_prefix(&String::new()),
+            None => vec![],
         }
     }
+    pub fn hex_decode_code(&self) -> Vec<u8> {
+        let default = String::new();
+
+        match &self.code {
+            Some(code_state) => hex::decode(match &code_state.bin {
+                Some(bin) => &bin,
+                None => &default,
+            })
+            .unwrap(),
+            None => vec![],
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+struct CodeState {
+    asm: Option<String>,
+    bin: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -114,7 +134,12 @@ struct Expect {
 }
 
 pub fn hex_decode_with_prefix(data: &String) -> Vec<u8> {
-    let slice = &data[2..data.len()];
+    let slice = if data.contains('x') {
+        &data[2..]
+    } else {
+        &data[..]
+    };
+
     let mut res = String::new();
     if slice.len() % 2 == 1 {
         res.push('0');
@@ -228,17 +253,16 @@ fn main() {
             None => vec![],
         };
 
-        let address_balances_vecs: Vec<(String, Vec<u8>)> = match &test.state {
-            Some(state) => state.get_address_balance_vecs(),
-            None => StateData::new().get_address_balance_vecs(),
+        let account_data_vecs = match &test.state {
+            Some(state) => state.account_data_vecs(),
+            None => StateData::new().account_data_vecs(),
         };
 
-        let address_balances_arrays: Vec<(&String, &[u8])> =
-            StateData::get_address_balances(&address_balances_vecs);
+        let account_data = StateData::account_data(&account_data_vecs);
 
         let mut state: State = State::new();
 
-        state.add_accounts(&address_balances_arrays);
+        state.add_accounts(&account_data);
 
         let result = evm(
             &code,
