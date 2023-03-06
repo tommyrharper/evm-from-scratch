@@ -524,7 +524,7 @@ fn address(machine: &mut Machine) -> ControlFlow {
 fn origin(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(U256::from_big_endian(machine.transaction.origin));
+        .push(U256::from_big_endian(machine.environment.origin));
 
     ControlFlow::Continue(1)
 }
@@ -532,7 +532,7 @@ fn origin(machine: &mut Machine) -> ControlFlow {
 fn caller(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(U256::from_big_endian(machine.transaction.caller));
+        .push(U256::from_big_endian(machine.environment.caller));
 
     ControlFlow::Continue(1)
 }
@@ -546,7 +546,7 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
     // TODO: implement gas price properly
     machine
         .stack
-        .push(U256::from_big_endian(machine.transaction.gasprice));
+        .push(U256::from_big_endian(machine.environment.gasprice));
 
     ControlFlow::Continue(1)
 }
