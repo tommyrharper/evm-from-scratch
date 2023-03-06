@@ -33,6 +33,7 @@ impl Opcode {
     pub const ORIGIN: u8 = 0x32;
     pub const CALLER: u8 = 0x33;
     pub const CALLVALUE: u8 = 0x34;
+    pub const CALLDATALOAD: u8 = 0x35;
     pub const GASPRICE: u8 = 0x3a;
     pub const BLOCKHASH: u8 = 0x40;
     pub const COINBASE: u8 = 0x41;

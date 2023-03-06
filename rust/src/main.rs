@@ -39,6 +39,7 @@ struct Tx {
     origin: Option<String>,
     gasprice: Option<String>,
     value: Option<String>,
+    data: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -169,6 +170,14 @@ fn main() {
             },
             None => vec![],
         };
+        let data = match &test.tx {
+            Some(tx) => match &tx.data {
+                Some(data) => hex_decode_with_prefix(data),
+                None => vec![],
+            },
+            None => vec![],
+        };
+
         let basefee = match &test.block {
             Some(tx) => match &tx.basefee {
                 Some(basefee) => hex_decode_with_prefix(basefee),
@@ -233,7 +242,7 @@ fn main() {
 
         let result = evm(
             &code,
-            Environment::new(&address, &caller, &origin, &gasprice, &value, state),
+            Environment::new(&address, &caller, &origin, &gasprice, &value, &data, state),
             Block::new(
                 &coinbase,
                 &timestamp,

@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use primitive_types::U256;
 
+use crate::consts::WORD_BYTES;
+
 #[derive(Debug)]
 pub struct Account<'a> {
     pub balance: &'a [u8],
@@ -50,6 +52,7 @@ pub struct Environment<'a> {
     pub origin: &'a [u8],
     pub gasprice: &'a [u8],
     pub value: &'a [u8],
+    pub data: &'a [u8],
     pub state: State<'a>,
 }
 
@@ -60,6 +63,7 @@ impl<'a> Environment<'a> {
         origin: &'a [u8],
         gasprice: &'a [u8],
         value: &'a [u8],
+        data: &'a [u8],
         state: State<'a>,
     ) -> Self {
         Self {
@@ -68,7 +72,23 @@ impl<'a> Environment<'a> {
             origin,
             gasprice,
             value,
+            data,
             state,
         }
+    }
+
+    pub fn load_calldata(&self, byte_offset: usize) -> U256 {
+        let skip = WORD_BYTES - self.data.len();
+        let mut res: [u8; WORD_BYTES] = [0; WORD_BYTES];
+
+        if self.data.len() > byte_offset {
+            for i in byte_offset..byte_offset + WORD_BYTES {
+                if i < self.data.len() {
+                    res[i + skip - byte_offset] = self.data[i];
+                }
+            }
+        }
+
+        U256::from_big_endian(&res)
     }
 }

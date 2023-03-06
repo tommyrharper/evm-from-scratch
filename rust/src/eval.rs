@@ -46,6 +46,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::ORIGIN => origin(machine),
         Opcode::CALLER => caller(machine),
         Opcode::CALLVALUE => callvalue(machine),
+        Opcode::CALLDATALOAD => calldataload(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
@@ -555,6 +556,16 @@ fn callvalue(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.environment.value));
+
+    ControlFlow::Continue(1)
+}
+
+fn calldataload(machine: &mut Machine) -> ControlFlow {
+    let byte_offset = machine.stack.pop().unwrap();
+
+    machine
+        .stack
+        .push(machine.environment.load_calldata(byte_offset.as_usize()));
 
     ControlFlow::Continue(1)
 }
