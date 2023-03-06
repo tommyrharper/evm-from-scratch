@@ -55,6 +55,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::GASPRICE => gasprice(machine),
         Opcode::EXTCODESIZE => extcodesize(machine),
         Opcode::EXTCODECOPY => extcodecopy(machine),
+        Opcode::EXTCODEHASH => extcodehash(machine),
         Opcode::COINBASE => coinbase(machine),
         Opcode::TIMESTAMP => timestamp(machine),
         Opcode::NUMBER => number(machine),
@@ -653,6 +654,20 @@ fn extcodecopy(machine: &mut Machine) -> ControlFlow {
     let code = arr_slice_extend(account_code, offset, size);
 
     machine.memory.set(dest_offset, code, size);
+
+    ControlFlow::Continue(1)
+}
+
+fn extcodehash(machine: &mut Machine) -> ControlFlow {
+    let address = machine.stack.pop().unwrap();
+
+    let account_code = machine.environment.state.get_account_code(address);
+    if account_code.len() == 0 {
+        machine.stack.push(0.into());
+    } else {
+        let hashed_code = Keccak256::digest(account_code);
+        machine.stack.push(U256::from_big_endian(&hashed_code));
+    }
 
     ControlFlow::Continue(1)
 }

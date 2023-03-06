@@ -41,6 +41,7 @@ impl Opcode {
     pub const GASPRICE: u8 = 0x3a;
     pub const EXTCODESIZE: u8 = 0x3b;
     pub const EXTCODECOPY: u8 = 0x3c;
+    pub const EXTCODEHASH: u8 = 0x3f;
     pub const BLOCKHASH: u8 = 0x40;
     pub const COINBASE: u8 = 0x41;
     pub const TIMESTAMP: u8 = 0x42;
