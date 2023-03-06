@@ -396,7 +396,9 @@ fn main() {
                     }
                     println!("]\n");
                 }
-                None => (),
+                None => {
+                    println!("\n");
+                },
             }
 
             println!("Actual error: {:?}", result.error);
@@ -423,7 +425,7 @@ fn main() {
                 }
                 println!("]\n");
             } else {
-                println!("Actual logs: []\n")
+                println!("\n")
             }
 
             println!("\nHint: {}\n", test.hint);
