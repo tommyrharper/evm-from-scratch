@@ -49,6 +49,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CALLDATALOAD => calldataload(machine),
         Opcode::CALLDATASIZE => calldatasize(machine),
         Opcode::CALLDATACOPY => calldatacopy(machine),
+        Opcode::CODESIZE => codesize(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
@@ -592,6 +593,12 @@ fn calldatacopy(machine: &mut Machine) -> ControlFlow {
     machine
         .memory
         .set(dest_offset.as_usize(), calldata, size.as_usize());
+
+    ControlFlow::Continue(1)
+}
+
+fn codesize(machine: &mut Machine) -> ControlFlow {
+    machine.stack.push(machine.code.len().into());
 
     ControlFlow::Continue(1)
 }

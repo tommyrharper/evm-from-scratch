@@ -36,6 +36,7 @@ impl Opcode {
     pub const CALLDATALOAD: u8 = 0x35;
     pub const CALLDATASIZE: u8 = 0x36;
     pub const CALLDATACOPY: u8 = 0x37;
+    pub const CODESIZE: u8 = 0x38;
     pub const GASPRICE: u8 = 0x3a;
     pub const BLOCKHASH: u8 = 0x40;
     pub const COINBASE: u8 = 0x41;
