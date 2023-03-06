@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use evm::block::Block;
-use evm::environment::Environment;
+use evm::environment::{Environment, State};
 /**
  * EVM From Scratch
  * Rust template
@@ -23,8 +25,10 @@ struct Evmtest {
     name: String,
     hint: String,
     code: Code,
+    // TODO: check if Option can be removed here
     tx: Option<Tx>,
     block: Option<BlockData>,
+    state: Option<StateData>,
     expect: Expect,
 }
 
@@ -45,6 +49,14 @@ struct BlockData {
     difficulty: Option<String>,
     gaslimit: Option<String>,
     chainid: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct StateData(HashMap<String, AccountData>);
+
+#[derive(Debug, Deserialize, Clone)]
+struct AccountData {
+    balance: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -161,9 +173,39 @@ fn main() {
             None => vec![],
         };
 
+        let default = HashMap::<String, AccountData>::new();
+
+        let state_iter_address_vec_account_balance_vec_u8: Vec<(Vec<u8>, Vec<u8>)> =
+            match &test.state {
+                Some(state) => state.0.iter(),
+                None => default.iter(),
+            }
+            .map(|(address, account_data)| {
+                (
+                    hex_decode_with_prefix(address),
+                    match &account_data.balance {
+                        Some(balance) => hex_decode_with_prefix(balance),
+                        None => hex_decode_with_prefix(&String::new()),
+                    },
+                )
+            })
+            .collect();
+
+        let state_iter_address_vec_account_balance_vec_u8_arrays: Vec<(&[u8], &[u8])> =
+            state_iter_address_vec_account_balance_vec_u8
+                .iter()
+                .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
+                .clone()
+                .collect();
+
+
+        let mut state: State = State::new();
+
+        state.add_accounts(&state_iter_address_vec_account_balance_vec_u8_arrays);
+
         let result = evm(
             &code,
-            Environment::new(&address, &caller, &origin, &gasprice),
+            Environment::new(&address, &caller, &origin, &gasprice, state),
             Block::new(
                 &coinbase,
                 &timestamp,
