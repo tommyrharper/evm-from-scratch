@@ -62,6 +62,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::DIFFICULTY => difficulty(machine),
         Opcode::GASLIMIT => gaslimit(machine),
         Opcode::CHAINID => chainid(machine),
+        Opcode::SELFBALANCE => selfbalance(machine),
         Opcode::BASEFEE => basefee(machine),
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
@@ -716,6 +717,18 @@ fn chainid(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.block.chainid));
+
+    ControlFlow::Continue(1)
+}
+
+fn selfbalance(machine: &mut Machine) -> ControlFlow {
+    let address = machine.environment.address;
+    let balance = machine
+        .environment
+        .state
+        .get_account_balance(U256::from_big_endian(address));
+
+    machine.stack.push(balance);
 
     ControlFlow::Continue(1)
 }
