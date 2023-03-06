@@ -201,7 +201,6 @@ fn main() {
             state_iter_address_vec_account_balance_vec_u8
                 .iter()
                 .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
-                .clone()
                 .collect();
 
         let mut state: State = State::new();
