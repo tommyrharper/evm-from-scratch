@@ -13,6 +13,7 @@ impl<'a> Account<'a> {
     }
 }
 
+// TODO: Update to use BTreeMap
 pub struct State<'a>(pub HashMap<&'a String, Account<'a>>);
 
 impl<'a> State<'a> {

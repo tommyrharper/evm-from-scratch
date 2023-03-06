@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::block::Block;
 use crate::environment::Environment;
 use crate::eval::eval;
@@ -28,6 +30,7 @@ pub struct EvmResult {
 pub struct Machine<'a> {
     pub stack: Stack,
     pub memory: Memory,
+    pub storage: HashMap<U256, U256>,
     pub jump_map: JumpMap,
     pub code: &'a [u8],
     pub environment: Environment<'a>,
@@ -40,6 +43,7 @@ impl<'a> Machine<'a> {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
+            storage: HashMap::new(),
             jump_map: JumpMap::new(code),
             environment,
             block,

@@ -67,6 +67,8 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::POP => pop_from_stack(machine),
         Opcode::MLOAD => mload(machine),
         Opcode::MSTORE => mstore(machine),
+        Opcode::SLOAD => sload(machine),
+        Opcode::SSTORE => sstore(machine),
         Opcode::MSTORE8 => mstore8(machine),
         Opcode::JUMP => jump(machine),
         Opcode::JUMPI => jumpi(machine),
@@ -772,6 +774,28 @@ fn mstore8(machine: &mut Machine) -> ControlFlow {
     let value = machine.stack.pop().unwrap();
 
     machine.memory.set(byte_offset.as_usize(), value, 1);
+
+    ControlFlow::Continue(1)
+}
+
+fn sload(machine: &mut Machine) -> ControlFlow {
+    let key = machine.stack.pop().unwrap();
+
+    let res = machine.storage.get(&key);
+
+    match res {
+        Some(result) => machine.stack.push(*result),
+        None => machine.stack.push(0.into()),
+    }
+
+    ControlFlow::Continue(1)
+}
+
+fn sstore(machine: &mut Machine) -> ControlFlow {
+    let key = machine.stack.pop().unwrap();
+    let value = machine.stack.pop().unwrap();
+
+    machine.storage.insert(key, value);
 
     ControlFlow::Continue(1)
 }

@@ -55,6 +55,8 @@ impl Opcode {
     pub const MLOAD: u8 = 0x51;
     pub const MSTORE: u8 = 0x52;
     pub const MSTORE8: u8 = 0x53;
+    pub const SLOAD: u8 = 0x54;
+    pub const SSTORE: u8 = 0x55;
     pub const JUMP: u8 = 0x56;
     pub const JUMPI: u8 = 0x57;
     pub const PC: u8 = 0x58;
