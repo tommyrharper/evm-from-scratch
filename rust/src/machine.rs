@@ -1,10 +1,10 @@
 use crate::block::Block;
+use crate::environment::Environment;
 use crate::eval::eval;
 use crate::eval::ControlFlow;
 use crate::jump_map::JumpMap;
 use crate::memory::Memory;
 use crate::stack::Stack;
-use crate::environment::Environment;
 use primitive_types::U256;
 
 #[derive(Debug)]
@@ -30,26 +30,19 @@ pub struct Machine<'a> {
     pub memory: Memory,
     pub jump_map: JumpMap,
     pub code: &'a [u8],
-    pub address: &'a [u8],
     pub environment: Environment<'a>,
     pub block: Block<'a>,
     pub pc: usize,
 }
 
 impl<'a> Machine<'a> {
-    pub fn new(
-        code: &'a [u8],
-        address: &'a [u8],
-        environment: Environment<'a>,
-        block: Block<'a>
-    ) -> Self {
+    pub fn new(code: &'a [u8], environment: Environment<'a>, block: Block<'a>) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
             jump_map: JumpMap::new(code),
             environment,
             block,
-            address,
             code,
             pc: 0,
         }

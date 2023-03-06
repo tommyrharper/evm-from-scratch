@@ -1,4 +1,5 @@
 use evm::block::Block;
+use evm::environment::Environment;
 /**
  * EVM From Scratch
  * Rust template
@@ -14,7 +15,6 @@ use evm::block::Block;
  * to Rust, implement EVM in another programming language first.
  */
 use evm::evm;
-use evm::environment::Environment;
 use primitive_types::U256;
 use serde::Deserialize;
 
@@ -163,8 +163,7 @@ fn main() {
 
         let result = evm(
             &code,
-            &address,
-            Environment::new(&caller, &origin, &gasprice),
+            Environment::new(&address, &caller, &origin, &gasprice),
             Block::new(
                 &coinbase,
                 &timestamp,

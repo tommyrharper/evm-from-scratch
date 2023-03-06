@@ -516,7 +516,9 @@ fn keccak256(machine: &mut Machine) -> ControlFlow {
 }
 
 fn address(machine: &mut Machine) -> ControlFlow {
-    machine.stack.push(U256::from_big_endian(machine.address));
+    machine
+        .stack
+        .push(U256::from_big_endian(machine.environment.address));
 
     ControlFlow::Continue(1)
 }
