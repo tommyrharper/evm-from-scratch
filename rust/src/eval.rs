@@ -635,6 +635,11 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
 }
 
 fn extcodesize(machine: &mut Machine) -> ControlFlow {
+    let address = machine.stack.pop().unwrap();
+
+    let code = machine.environment.state.get_account_code(address);
+
+    machine.stack.push(code.len().into());
 
     ControlFlow::Continue(1)
 }
