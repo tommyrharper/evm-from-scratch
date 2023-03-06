@@ -77,6 +77,11 @@ impl<'a> Environment<'a> {
         }
     }
 
+    pub fn calldata_size(&self) -> U256 {
+        let data = hex::decode(&self.data).unwrap().len();
+        data.into()
+    }
+
     pub fn load_calldata(&self, byte_offset: usize) -> U256 {
         let data = hex::decode(&self.data).unwrap();
         let mut res: [u8; WORD_BYTES] = [0; WORD_BYTES];

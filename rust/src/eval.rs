@@ -47,6 +47,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CALLER => caller(machine),
         Opcode::CALLVALUE => callvalue(machine),
         Opcode::CALLDATALOAD => calldataload(machine),
+        Opcode::CALLDATASIZE => calldatasize(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
@@ -566,6 +567,14 @@ fn calldataload(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(machine.environment.load_calldata(byte_offset.as_usize()));
+
+    ControlFlow::Continue(1)
+}
+
+fn calldatasize(machine: &mut Machine) -> ControlFlow {
+    machine
+        .stack
+        .push(machine.environment.calldata_size());
 
     ControlFlow::Continue(1)
 }
