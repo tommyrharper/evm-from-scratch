@@ -64,10 +64,12 @@ impl Opcode {
     pub const GAS: u8 = 0x5a;
     pub const JUMPDEST: u8 = 0x5b;
     pub const PUSH1: u8 = 0x60;
-    pub const PUSH32: u8 = 0x7F;
+    pub const PUSH32: u8 = 0x7f;
     pub const DUP1: u8 = 0x80;
-    pub const DUP16: u8 = 0x8F;
+    pub const DUP16: u8 = 0x8f;
     pub const SWAP1: u8 = 0x90;
-    pub const SWAP16: u8 = 0x9F;
-    pub const INVALID: u8 = 0xFE;
+    pub const SWAP16: u8 = 0x9f;
+    pub const LOG0: u8 = 0xa0;
+    pub const LOG4: u8 = 0xa4;
+    pub const INVALID: u8 = 0xfe;
 }

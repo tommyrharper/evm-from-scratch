@@ -1,6 +1,6 @@
 use crate::consts::WORD_BYTES;
 use crate::helpers::*;
-use crate::machine::{EvmError, Machine};
+use crate::machine::{EvmError, Log, Machine};
 use crate::opcode::Opcode;
 use primitive_types::U256;
 use sha3::{Digest, Keccak256};
@@ -79,6 +79,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::PUSH1..=Opcode::PUSH32 => push_on_to_stack(machine),
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
+        Opcode::LOG0..=Opcode::LOG4 => log(machine),
         Opcode::INVALID => invalid(machine),
         _ => ControlFlow::ExitError(EvmError::InvalidInstruction),
     }
@@ -895,6 +896,38 @@ fn swap(machine: &mut Machine) -> ControlFlow {
         Ok(()) => (),
         Err(err) => return ControlFlow::ExitError(err),
     }
+
+    ControlFlow::Continue(1)
+}
+
+fn log(machine: &mut Machine) -> ControlFlow {
+    let n = usize::from(machine.opcode() - Opcode::LOG0);
+
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let data = machine.memory.get(offset, size);
+
+    let mut new_log = Log {
+        address: hex::encode(machine.environment.address),
+        data: hex::encode(data),
+        topics: Vec::new(),
+    };
+
+    for _i in 0..n {
+        let topic = machine.stack.pop().unwrap();
+        let mut bytes: [u8; 32] = [0; 32];
+        topic.to_big_endian(&mut bytes);
+
+        let topic_string = hex::encode(bytes);
+
+        let mut prepended_topic: String = "0x".to_owned();
+        prepended_topic.push_str(&topic_string);
+
+        new_log.topics.push(prepended_topic);
+    }
+
+    machine.logs.push(new_log);
 
     ControlFlow::Continue(1)
 }

@@ -28,6 +28,7 @@ pub struct EvmResult {
     pub logs: Vec<Log>,
 }
 
+#[derive(Debug, Clone)]
 pub struct Log {
     pub address: String,
     pub data: String,
@@ -39,6 +40,7 @@ pub struct Machine<'a> {
     pub memory: Memory,
     pub storage: HashMap<U256, U256>,
     pub jump_map: JumpMap,
+    pub logs: Vec<Log>,
     pub code: &'a [u8],
     pub environment: Environment<'a>,
     pub block: Block<'a>,
@@ -52,6 +54,7 @@ impl<'a> Machine<'a> {
             memory: Memory::new(),
             storage: HashMap::new(),
             jump_map: JumpMap::new(code),
+            logs: Vec::new(),
             environment,
             block,
             code,
@@ -94,7 +97,7 @@ impl<'a> Machine<'a> {
                         stack: self.stack(),
                         success: false,
                         error: Some(error),
-                        logs: Vec::new(),
+                        logs: self.logs.clone(),
                     }
                 }
             }
@@ -104,7 +107,7 @@ impl<'a> Machine<'a> {
             stack: self.stack(),
             success: true,
             error: None,
-            logs: Vec::new(),
+            logs: self.logs.clone(),
         };
     }
 }
