@@ -53,6 +53,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CODECOPY => codecopy(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
+        Opcode::EXTCODESIZE => extcodesize(machine),
         Opcode::COINBASE => coinbase(machine),
         Opcode::TIMESTAMP => timestamp(machine),
         Opcode::NUMBER => number(machine),
@@ -629,6 +630,11 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
         .push(U256::from_big_endian(machine.environment.gasprice));
+
+    ControlFlow::Continue(1)
+}
+
+fn extcodesize(machine: &mut Machine) -> ControlFlow {
 
     ControlFlow::Continue(1)
 }

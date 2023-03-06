@@ -39,6 +39,7 @@ impl Opcode {
     pub const CODESIZE: u8 = 0x38;
     pub const CODECOPY: u8 = 0x39;
     pub const GASPRICE: u8 = 0x3a;
+    pub const EXTCODESIZE: u8 = 0x3b;
     pub const BLOCKHASH: u8 = 0x40;
     pub const COINBASE: u8 = 0x41;
     pub const TIMESTAMP: u8 = 0x42;
