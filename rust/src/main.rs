@@ -59,6 +59,15 @@ struct AccountData {
     balance: Option<String>,
 }
 
+impl AccountData {
+    pub fn hex_decode_balance(&self) -> Vec<u8> {
+        match &self.balance {
+            Some(balance) => hex_decode_with_prefix(&balance),
+            None => hex_decode_with_prefix(&String::new()),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct Code {
     asm: String,
@@ -183,10 +192,7 @@ fn main() {
             .map(|(address, account_data)| {
                 (
                     hex_decode_with_prefix(address),
-                    match &account_data.balance {
-                        Some(balance) => hex_decode_with_prefix(balance),
-                        None => hex_decode_with_prefix(&String::new()),
-                    },
+                    account_data.hex_decode_balance(),
                 )
             })
             .collect();
@@ -197,7 +203,6 @@ fn main() {
                 .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
                 .clone()
                 .collect();
-
 
         let mut state: State = State::new();
 
