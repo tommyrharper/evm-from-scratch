@@ -129,8 +129,9 @@ struct Code {
 struct Expect {
     stack: Option<Vec<String>>,
     success: bool,
-    logs: Option<Vec<Log>>, // #[serde(rename = "return")]
-                            // ret: Option<String>,
+    logs: Option<Vec<Log>>,
+    #[serde(rename = "return")]
+    ret: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -348,11 +349,30 @@ fn main() {
             None => (),
         }
 
+        let mut return_matches = true;
+
+        match &test.expect.ret {
+            Some(ret) => {
+                let expected_ret = U256::from_str_radix(ret, 16).unwrap();
+                let actual_ret = result.return_val;
+                match actual_ret {
+                    Some(actual_ret) => {
+                        return_matches = actual_ret == expected_ret;
+                    }
+                    None => {
+                        return_matches = false;
+                    }
+                }
+            }
+            None => (),
+        }
+
         matching = matching
             && result.success == test.expect.success
             && (test.expect.success && result.error.is_none()
                 || !test.expect.success && !result.error.is_none())
-            && logs_match;
+            && logs_match
+            && return_matches;
 
         if !matching {
             println!("Instructions: \n{}\n", test.code.asm);
@@ -367,6 +387,12 @@ fn main() {
                 println!("  {:#X},", v);
             }
             println!("]");
+            match &test.expect.ret {
+                Some(ret) => {
+                    println!("Expected return: {:?}", ret)
+                }
+                None => println!("Expected return: None"),
+            }
             match &test.expect.logs {
                 Some(logs) => {
                     println!("Expected logs: [");
@@ -398,11 +424,12 @@ fn main() {
                 }
                 None => {
                     println!("\n");
-                },
+                }
             }
 
             println!("Actual error: {:?}", result.error);
             println!("Actual success: {:?}", result.success);
+            println!("Actual return: {:?}", result.return_val);
             println!("Actual stack: [");
             for v in result.stack {
                 println!("  {:#X},", v);
