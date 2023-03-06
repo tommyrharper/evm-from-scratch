@@ -52,7 +52,7 @@ pub struct Environment<'a> {
     pub origin: &'a [u8],
     pub gasprice: &'a [u8],
     pub value: &'a [u8],
-    pub data: &'a [u8],
+    pub data: &'a String,
     pub state: State<'a>,
 }
 
@@ -63,7 +63,7 @@ impl<'a> Environment<'a> {
         origin: &'a [u8],
         gasprice: &'a [u8],
         value: &'a [u8],
-        data: &'a [u8],
+        data: &'a String,
         state: State<'a>,
     ) -> Self {
         Self {
@@ -77,15 +77,8 @@ impl<'a> Environment<'a> {
         }
     }
 
-    fn load_data_as_word(&self) -> Vec<u8> {
-        let skip = WORD_BYTES - self.data.len();
-        let mut tmp: Vec<u8> = vec![0; skip];
-        tmp.extend(self.data.to_vec());
-        tmp
-    }
-
     pub fn load_calldata(&self, byte_offset: usize) -> U256 {
-        let data = self.load_data_as_word();
+        let data = hex::decode(&self.data).unwrap();
         let mut res: [u8; WORD_BYTES] = [0; WORD_BYTES];
 
         for i in 0..WORD_BYTES {

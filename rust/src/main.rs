@@ -172,10 +172,10 @@ fn main() {
         };
         let data = match &test.tx {
             Some(tx) => match &tx.data {
-                Some(data) => hex_decode_with_prefix(data),
-                None => vec![],
+                Some(data) => data.clone(),
+                None => String::new(),
             },
-            None => vec![],
+            None => String::new(),
         };
 
         let basefee = match &test.block {
