@@ -54,6 +54,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::EXTCODESIZE => extcodesize(machine),
+        Opcode::EXTCODECOPY => extcodecopy(machine),
         Opcode::COINBASE => coinbase(machine),
         Opcode::TIMESTAMP => timestamp(machine),
         Opcode::NUMBER => number(machine),
@@ -611,11 +612,9 @@ fn codecopy(machine: &mut Machine) -> ControlFlow {
     let offset = machine.stack.pop().unwrap().as_usize();
     let size = machine.stack.pop().unwrap().as_usize();
 
-    let code = machine.code_slice(offset, size);
+    let code = arr_slice_extend(machine.code, offset, size);
 
-    machine
-        .memory
-        .set(dest_offset, code, size);
+    machine.memory.set(dest_offset, code, size);
 
     ControlFlow::Continue(1)
 }
@@ -640,6 +639,20 @@ fn extcodesize(machine: &mut Machine) -> ControlFlow {
     let code = machine.environment.state.get_account_code(address);
 
     machine.stack.push(code.len().into());
+
+    ControlFlow::Continue(1)
+}
+
+fn extcodecopy(machine: &mut Machine) -> ControlFlow {
+    let address = machine.stack.pop().unwrap();
+    let dest_offset = machine.stack.pop().unwrap().as_usize();
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let account_code = machine.environment.state.get_account_code(address);
+    let code = arr_slice_extend(account_code, offset, size);
+
+    machine.memory.set(dest_offset, code, size);
 
     ControlFlow::Continue(1)
 }

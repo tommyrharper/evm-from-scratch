@@ -48,18 +48,6 @@ impl<'a> Machine<'a> {
         }
     }
 
-    pub fn code_slice(&self, offset: usize, size: usize) -> U256 {
-        let mut res = vec![0; size];
-        for i in 0..size {
-            let code_index = i + offset;
-            if code_index < self.code.len() {
-                let data = self.code[code_index];
-                res[i] = data;
-            }
-        }
-        U256::from_big_endian(&res)
-    }
-
     fn stack(&self) -> Vec<U256> {
         self.stack.data()
     }

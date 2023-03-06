@@ -2,6 +2,18 @@ use std::ops::{Add, Sub, Div};
 
 use primitive_types::U256;
 
+pub fn arr_slice_extend(arr: &[u8], offset: usize, size: usize) -> U256 {
+    let mut res = vec![0; size];
+    for i in 0..size {
+        let code_index = i + offset;
+        if code_index < arr.len() {
+            let data = arr[code_index];
+            res[i] = data;
+        }
+    }
+    U256::from_big_endian(&res)
+}
+
 pub fn convert_twos_compliment(x: U256) -> U256 {
     // Note, normally the twos compliment of 0 is 0
     // However according to the EVM spec it seems to want this behaviour
