@@ -908,11 +908,7 @@ fn log(machine: &mut Machine) -> ControlFlow {
 
     let data = machine.memory.get(offset, size);
 
-    let mut new_log = Log {
-        address: hex::encode(machine.environment.address),
-        data: hex::encode(data),
-        topics: Vec::new(),
-    };
+    let mut new_log = Log::new(machine.environment.address, data);
 
     for _i in 0..n {
         let topic = machine.stack.pop().unwrap();

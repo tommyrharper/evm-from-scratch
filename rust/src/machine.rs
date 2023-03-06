@@ -36,6 +36,14 @@ pub struct Log {
 }
 
 impl Log {
+    pub fn new(address: &[u8], data: &[u8]) -> Self {
+        Self {
+            address: hex::encode(address),
+            data: hex::encode(data),
+            topics: Vec::new(),
+        }
+    }
+
     pub fn add_topic(&mut self, topic: U256) {
         let mut bytes: [u8; 32] = [0; 32];
         topic.to_big_endian(&mut bytes);
