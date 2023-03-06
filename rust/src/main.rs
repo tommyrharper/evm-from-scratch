@@ -59,6 +59,15 @@ impl StateData {
         Self(HashMap::new())
     }
 
+    pub fn get_address_balances(
+        address_balances_vecs: &Vec<(Vec<u8>, Vec<u8>)>,
+    ) -> Vec<(&[u8], &[u8])> {
+        address_balances_vecs
+            .iter()
+            .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
+            .collect()
+    }
+
     pub fn get_address_balance_vecs(&self) -> Vec<(Vec<u8>, Vec<u8>)> {
         let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = self
             .0
@@ -207,10 +216,8 @@ fn main() {
             None => StateData::new().get_address_balance_vecs(),
         };
 
-        let address_balances_arrays: Vec<(&[u8], &[u8])> = address_balances_vecs
-            .iter()
-            .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
-            .collect();
+        let address_balances_arrays: Vec<(&[u8], &[u8])> =
+            StateData::get_address_balances(&address_balances_vecs);
 
         let mut state: State = State::new();
 
