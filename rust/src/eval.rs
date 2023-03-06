@@ -918,9 +918,9 @@ fn eval_return(machine: &mut Machine) -> ControlFlow {
     let offset = machine.stack.pop().unwrap().as_usize();
     let size = machine.stack.pop().unwrap().as_usize();
 
-    let _res = machine.memory.get(offset, size);
+    let res = machine.memory.get(offset, size);
 
-    exit_success(ExitSuccess::Return)
+    exit_success(ExitSuccess::Return(U256::from_big_endian(res)))
 }
 
 fn invalid(_machine: &mut Machine) -> ControlFlow {

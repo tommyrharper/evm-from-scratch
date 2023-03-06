@@ -21,7 +21,7 @@ pub enum ExitReason {
 
 pub enum ExitSuccess {
     Stop,
-    Return,
+    Return(U256),
 }
 
 #[derive(Debug)]
@@ -129,7 +129,15 @@ impl<'a> Machine<'a> {
                 EvmStatus::Exited(reason) => match reason {
                     ExitReason::Success(success) => match success {
                         ExitSuccess::Stop => break,
-                        ExitSuccess::Return => break,
+                        ExitSuccess::Return(val) => {
+                            return EvmResult {
+                                stack: self.stack(),
+                                success: true,
+                                error: None,
+                                logs: self.logs.clone(),
+                                return_val: Some(val),
+                            }
+                        },
                     },
                     ExitReason::Error(error) => {
                         return EvmResult {
