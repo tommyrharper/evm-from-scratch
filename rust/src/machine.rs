@@ -41,6 +41,7 @@ pub struct EvmResult {
     pub success: bool,
     pub error: Option<EvmError>,
     pub logs: Vec<Log>,
+    pub return_val: Option<U256>,
 }
 
 #[derive(Debug, Clone)]
@@ -136,6 +137,7 @@ impl<'a> Machine<'a> {
                             success: false,
                             error: Some(error),
                             logs: self.logs.clone(),
+                            return_val: None,
                         }
                     }
                 },
@@ -147,6 +149,7 @@ impl<'a> Machine<'a> {
             success: true,
             error: None,
             logs: self.logs.clone(),
+            return_val: None,
         };
     }
 }
