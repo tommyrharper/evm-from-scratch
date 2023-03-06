@@ -82,11 +82,11 @@ impl<'a> Environment<'a> {
         data.into()
     }
 
-    pub fn load_calldata(&self, byte_offset: usize) -> U256 {
+    pub fn load_calldata(&self, byte_offset: usize, target_size: usize) -> U256 {
         let data = hex::decode(&self.data).unwrap();
-        let mut res: [u8; WORD_BYTES] = [0; WORD_BYTES];
+        let mut res: Vec<u8> = vec![0; target_size];
 
-        for i in 0..WORD_BYTES {
+        for i in 0..target_size {
             let data_index = i + byte_offset;
             if data_index < data.len() {
                 let val = data[data_index];

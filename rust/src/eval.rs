@@ -48,6 +48,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CALLVALUE => callvalue(machine),
         Opcode::CALLDATALOAD => calldataload(machine),
         Opcode::CALLDATASIZE => calldatasize(machine),
+        Opcode::CALLDATACOPY => calldatacopy(machine),
         Opcode::BLOCKHASH => blockhash(machine),
         Opcode::GASPRICE => gasprice(machine),
         Opcode::COINBASE => coinbase(machine),
@@ -564,17 +565,33 @@ fn callvalue(machine: &mut Machine) -> ControlFlow {
 fn calldataload(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
 
-    machine
-        .stack
-        .push(machine.environment.load_calldata(byte_offset.as_usize()));
+    machine.stack.push(
+        machine
+            .environment
+            .load_calldata(byte_offset.as_usize(), WORD_BYTES),
+    );
 
     ControlFlow::Continue(1)
 }
 
 fn calldatasize(machine: &mut Machine) -> ControlFlow {
+    machine.stack.push(machine.environment.calldata_size());
+
+    ControlFlow::Continue(1)
+}
+
+fn calldatacopy(machine: &mut Machine) -> ControlFlow {
+    let dest_offset = machine.stack.pop().unwrap();
+    let offset = machine.stack.pop().unwrap();
+    let size = machine.stack.pop().unwrap();
+
+    let calldata = machine
+        .environment
+        .load_calldata(offset.as_usize(), size.as_usize());
+
     machine
-        .stack
-        .push(machine.environment.calldata_size());
+        .memory
+        .set(dest_offset.as_usize(), calldata, size.as_usize());
 
     ControlFlow::Continue(1)
 }
