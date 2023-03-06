@@ -77,15 +77,22 @@ impl<'a> Environment<'a> {
         }
     }
 
-    pub fn load_calldata(&self, byte_offset: usize) -> U256 {
+    fn load_data_as_word(&self) -> Vec<u8> {
         let skip = WORD_BYTES - self.data.len();
+        let mut tmp: Vec<u8> = vec![0; skip];
+        tmp.extend(self.data.to_vec());
+        tmp
+    }
+
+    pub fn load_calldata(&self, byte_offset: usize) -> U256 {
+        let data = self.load_data_as_word();
         let mut res: [u8; WORD_BYTES] = [0; WORD_BYTES];
 
-        if self.data.len() > byte_offset {
-            for i in byte_offset..byte_offset + WORD_BYTES {
-                if i < self.data.len() {
-                    res[i + skip - byte_offset] = self.data[i];
-                }
+        for i in 0..WORD_BYTES {
+            let data_index = i + byte_offset;
+            if data_index < data.len() {
+                let val = data[data_index];
+                res[i] = val;
             }
         }
 
