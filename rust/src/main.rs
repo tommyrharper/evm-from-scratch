@@ -61,27 +61,25 @@ impl StateData {
 
     // TODO: clean up mess
     pub fn get_address_balances(
-        address_balances_vecs: &Vec<(Vec<u8>, Vec<u8>)>,
-    ) -> Vec<(&[u8], &[u8])> {
+        address_balances_vecs: &Vec<(String, Vec<u8>)>,
+    ) -> Vec<(&String, &[u8])> {
         address_balances_vecs
             .iter()
-            .map(|(address, balance)| (address.as_slice(), balance.as_slice()))
+            .map(|(address, balance)| (address, balance.as_slice()))
             .collect()
     }
 
     // TODO: clean up mess
-    pub fn get_address_balance_vecs(&self) -> Vec<(Vec<u8>, Vec<u8>)> {
-        let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = self
-            .0
+    pub fn get_address_balance_vecs(&self) -> Vec<(String, Vec<u8>)> {
+        self.0
             .iter()
             .map(|(address, account_data)| {
                 (
-                    hex_decode_with_prefix(address),
+                    address[2..].to_string().to_uppercase(),
                     account_data.hex_decode_balance(),
                 )
             })
-            .collect();
-        address_balances_vecs
+            .collect()
     }
 }
 
@@ -213,12 +211,12 @@ fn main() {
             None => vec![],
         };
 
-        let address_balances_vecs: Vec<(Vec<u8>, Vec<u8>)> = match &test.state {
+        let address_balances_vecs: Vec<(String, Vec<u8>)> = match &test.state {
             Some(state) => state.get_address_balance_vecs(),
             None => StateData::new().get_address_balance_vecs(),
         };
 
-        let address_balances_arrays: Vec<(&[u8], &[u8])> =
+        let address_balances_arrays: Vec<(&String, &[u8])> =
             StateData::get_address_balances(&address_balances_vecs);
 
         let mut state: State = State::new();

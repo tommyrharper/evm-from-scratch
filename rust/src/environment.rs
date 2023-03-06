@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Account<'a> {
-    balance: &'a [u8],
+    pub balance: &'a [u8],
 }
 
 impl<'a> Account<'a> {
@@ -10,21 +11,21 @@ impl<'a> Account<'a> {
     }
 }
 
-pub struct State<'a>(HashMap<&'a [u8], Account<'a>>);
+pub struct State<'a>(pub HashMap<&'a String, Account<'a>>);
 
 impl<'a> State<'a> {
     pub fn new() -> Self {
-        let map = HashMap::<&'a [u8], Account>::new();
+        let map = HashMap::<&String, Account>::new();
         Self(map)
     }
 
-    pub fn add_accounts(&mut self, address_balances: &Vec<(&'a [u8], &'a [u8])>) {
+    pub fn add_accounts(&mut self, address_balances: &Vec<(&'a String, &'a [u8])>) {
         for (address, balance) in address_balances {
             self.add_account(address, balance);
         }
     }
 
-    pub fn add_account(&mut self, address: &'a [u8], balance: &'a [u8]) {
+    pub fn add_account(&mut self, address: &'a String, balance: &'a [u8]) {
         self.0.insert(address, Account::new(balance));
     }
 }
