@@ -35,6 +35,20 @@ pub struct Log {
     pub topics: Vec<String>,
 }
 
+impl Log {
+    pub fn add_topic(&mut self, topic: U256) {
+        let mut bytes: [u8; 32] = [0; 32];
+        topic.to_big_endian(&mut bytes);
+
+        let topic_string = hex::encode(bytes);
+
+        let mut prepended_topic: String = "0x".to_owned();
+        prepended_topic.push_str(&topic_string);
+
+        self.topics.push(prepended_topic);
+    }
+}
+
 pub struct Machine<'a> {
     pub stack: Stack,
     pub memory: Memory,

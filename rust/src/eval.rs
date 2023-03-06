@@ -916,15 +916,7 @@ fn log(machine: &mut Machine) -> ControlFlow {
 
     for _i in 0..n {
         let topic = machine.stack.pop().unwrap();
-        let mut bytes: [u8; 32] = [0; 32];
-        topic.to_big_endian(&mut bytes);
-
-        let topic_string = hex::encode(bytes);
-
-        let mut prepended_topic: String = "0x".to_owned();
-        prepended_topic.push_str(&topic_string);
-
-        new_log.topics.push(prepended_topic);
+        new_log.add_topic(topic);
     }
 
     machine.logs.push(new_log);
