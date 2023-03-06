@@ -129,8 +129,15 @@ struct Code {
 struct Expect {
     stack: Option<Vec<String>>,
     success: bool,
-    // #[serde(rename = "return")]
-    // ret: Option<String>,
+    logs: Option<Vec<Log>>, // #[serde(rename = "return")]
+                            // ret: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Log {
+    address: Option<String>,
+    data: Option<String>,
+    topics: Option<Vec<String>>,
 }
 
 pub fn hex_decode_with_prefix(data: &String) -> Vec<u8> {
@@ -295,10 +302,57 @@ fn main() {
             }
         }
 
+        let mut logs_match = true;
+
+        match &test.expect.logs {
+            Some(logs) => {
+                for (i, log) in logs.iter().enumerate() {
+                    match &log.address {
+                        Some(address) => {
+                            if i >= result.logs.len() {
+                                logs_match = false;
+                            } else {
+                                logs_match = address == &result.logs[i].address;
+                            }
+                        }
+                        None => (),
+                    }
+                    match &log.data {
+                        Some(data) => {
+                            if i >= result.logs.len() {
+                                logs_match = false;
+                            } else {
+                                logs_match = data == &result.logs[i].data
+                            }
+                        }
+                        None => (),
+                    }
+                    match &log.topics {
+                        Some(data) => {
+                            if i >= result.logs.len() {
+                                logs_match = false;
+                            } else {
+                                for (j, topic) in data.iter().enumerate() {
+                                    if j >= result.logs[i].topics.len() {
+                                        logs_match = false
+                                    } else {
+                                        logs_match = topic == &result.logs[i].topics[j]
+                                    }
+                                }
+                            }
+                        }
+                        None => (),
+                    }
+                }
+            }
+            None => (),
+        }
+
         matching = matching
             && result.success == test.expect.success
             && (test.expect.success && result.error.is_none()
-                || !test.expect.success && !result.error.is_none());
+                || !test.expect.success && !result.error.is_none())
+            && logs_match;
 
         if !matching {
             println!("Instructions: \n{}\n", test.code.asm);
@@ -312,7 +366,38 @@ fn main() {
             for v in expected_stack {
                 println!("  {:#X},", v);
             }
-            println!("]\n");
+            println!("]");
+            match &test.expect.logs {
+                Some(logs) => {
+                    println!("Expected logs: [");
+                    for log in logs {
+                        match &log.address {
+                            Some(addr) => println!("  address: {:?},", addr),
+                            None => (),
+                        }
+                        match &log.data {
+                            Some(data) => println!("  data: {:?},", data),
+                            None => (),
+                        }
+                        match &log.topics {
+                            Some(topics) => {
+                                if topics.len() > 0 {
+                                    println!("  topics: [");
+                                    for topic in topics {
+                                        println!("    {:?}", topic);
+                                    }
+                                    println!("  ]");
+                                } else {
+                                    println!("  topics: {:?},", topics);
+                                }
+                            }
+                            None => (),
+                        }
+                    }
+                    println!("]\n");
+                }
+                None => (),
+            }
 
             println!("Actual error: {:?}", result.error);
             println!("Actual success: {:?}", result.success);
@@ -320,7 +405,26 @@ fn main() {
             for v in result.stack {
                 println!("  {:#X},", v);
             }
-            println!("]\n");
+            println!("]");
+            if result.logs.len() > 0 {
+                println!("Actual logs: [");
+                for log in result.logs {
+                    println!("  address: {:?},", log.address);
+                    println!("  data: {:?},", log.data);
+                    if log.topics.len() > 0 {
+                        println!("  topics: [");
+                        for topic in log.topics {
+                            println!("    {:?}", topic);
+                        }
+                        println!("  ]");
+                    } else {
+                        println!("  topics: []")
+                    }
+                }
+                println!("]\n");
+            } else {
+                println!("Actual logs: []\n")
+            }
 
             println!("\nHint: {}\n", test.hint);
             println!("Progress: {}/{}\n\n", index, total);

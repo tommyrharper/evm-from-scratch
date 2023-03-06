@@ -25,6 +25,13 @@ pub struct EvmResult {
     pub stack: Vec<U256>,
     pub success: bool,
     pub error: Option<EvmError>,
+    pub logs: Vec<Log>,
+}
+
+pub struct Log {
+    pub address: String,
+    pub data: String,
+    pub topics: Vec<String>,
 }
 
 pub struct Machine<'a> {
@@ -87,6 +94,7 @@ impl<'a> Machine<'a> {
                         stack: self.stack(),
                         success: false,
                         error: Some(error),
+                        logs: Vec::new(),
                     }
                 }
             }
@@ -96,6 +104,7 @@ impl<'a> Machine<'a> {
             stack: self.stack(),
             success: true,
             error: None,
+            logs: Vec::new(),
         };
     }
 }
