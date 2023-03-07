@@ -50,6 +50,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::EXTCODESIZE => extcodesize(machine),
         Opcode::EXTCODECOPY => extcodecopy(machine),
         Opcode::EXTCODEHASH => extcodehash(machine),
+        Opcode::RETURNDATASIZE => returndatasize(machine),
         Opcode::COINBASE => coinbase(machine),
         Opcode::TIMESTAMP => timestamp(machine),
         Opcode::NUMBER => number(machine),
@@ -670,6 +671,13 @@ fn extcodehash(machine: &mut Machine) -> ControlFlow {
         machine.stack.push(U256::from_big_endian(&hashed_code));
     }
 
+    ControlFlow::Continue(1)
+}
+
+fn returndatasize(machine: &mut Machine) -> ControlFlow {
+    // To implement this I need to implement a return_data_buffer vec, that keeps that data from CALL
+    // And I need to access the length from there
+    // It might be time to create a Runtime struct, but that could be avoided
     ControlFlow::Continue(1)
 }
 
