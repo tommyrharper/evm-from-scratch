@@ -382,17 +382,17 @@ fn main() {
                 if test.expect.success { None } else { Some(()) }
             );
             println!("Expected success: {:?}", test.expect.success);
-            println!("Expected stack: [");
-            for v in expected_stack {
-                println!("  {:#X},", v);
-            }
-            println!("]");
             match &test.expect.ret {
                 Some(ret) => {
                     println!("Expected return: {:?}", ret)
                 }
                 None => println!("Expected return: None"),
             }
+            println!("Expected stack: [");
+            for v in expected_stack {
+                println!("  {:#X},", v);
+            }
+            println!("]");
             match &test.expect.logs {
                 Some(logs) => {
                     println!("Expected logs: [");
