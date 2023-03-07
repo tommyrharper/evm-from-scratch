@@ -923,8 +923,8 @@ fn call(machine: &mut Machine) -> ControlFlow {
     let value = machine.stack.pop().unwrap();
     let args_offset = machine.stack.pop().unwrap().as_usize();
     let args_size = machine.stack.pop().unwrap().as_usize();
-    let ret_offset = machine.stack.pop().unwrap();
-    let ret_size = machine.stack.pop().unwrap();
+    let ret_offset = machine.stack.pop().unwrap().as_usize();
+    let ret_size = machine.stack.pop().unwrap().as_usize();
 
     let data = machine.memory.get(args_offset, args_size);
 
@@ -954,9 +954,13 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     // TODO: handle failures
     match &res.return_val {
-        Some(val) => exit_success(ExitSuccess::Return(*val)),
-        None => exit_success(ExitSuccess::Return(U256::zero())),
-    }
+        Some(value) => {
+            machine.memory.set(ret_offset, *value, ret_size);
+        }
+        None => (),
+    };
+
+    ControlFlow::Continue(1)
 }
 
 fn eval_return(machine: &mut Machine) -> ControlFlow {
