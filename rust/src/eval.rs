@@ -1,7 +1,8 @@
 use crate::consts::WORD_BYTES;
-use crate::helpers::*;
+use crate::environment::Environment;
 use crate::machine::{ControlFlow, EvmError, ExitSuccess, Log, Machine};
 use crate::opcode::Opcode;
+use crate::{evm, helpers::*};
 use primitive_types::U256;
 use sha3::{Digest, Keccak256};
 
@@ -73,6 +74,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
         Opcode::LOG0..=Opcode::LOG4 => log(machine),
+        Opcode::CALL => call(machine),
         Opcode::RETURN => eval_return(machine),
         Opcode::INVALID => invalid(machine),
         Opcode::REVERT => revert(machine),
@@ -913,6 +915,48 @@ fn log(machine: &mut Machine) -> ControlFlow {
     machine.logs.push(new_log);
 
     ControlFlow::Continue(1)
+}
+
+fn call(machine: &mut Machine) -> ControlFlow {
+    let gas = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap();
+    let value = machine.stack.pop().unwrap();
+    let args_offset = machine.stack.pop().unwrap().as_usize();
+    let args_size = machine.stack.pop().unwrap().as_usize();
+    let ret_offset = machine.stack.pop().unwrap();
+    let ret_size = machine.stack.pop().unwrap();
+
+    let data = machine.memory.get(args_offset, args_size);
+
+    let code = machine.environment.state.get_account_code(address);
+
+    let mut address_bytes: [u8; 32] = [0; 32];
+    U256::to_big_endian(&address, &mut address_bytes);
+
+    let mut value_bytes: [u8; 32] = [0; 32];
+    U256::to_big_endian(&value, &mut value_bytes);
+
+    let data_string = hex::encode(data);
+
+    let res = evm(
+        code,
+        Environment::new(
+            &address_bytes[..],
+            machine.environment.address,
+            machine.environment.origin,
+            machine.environment.gasprice,
+            &value_bytes[..],
+            &data_string,
+            machine.environment.state.clone(),
+        ),
+        machine.block,
+    );
+
+    // TODO: handle failures
+    match &res.return_val {
+        Some(val) => exit_success(ExitSuccess::Return(*val)),
+        None => exit_success(ExitSuccess::Return(U256::zero())),
+    }
 }
 
 fn eval_return(machine: &mut Machine) -> ControlFlow {

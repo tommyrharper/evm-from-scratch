@@ -1,3 +1,4 @@
+#[derive(Copy, Clone)]
 pub struct Block<'a> {
     pub coinbase: &'a [u8],
     pub timestamp: &'a [u8],

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use primitive_types::U256;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Account<'a> {
     pub balance: &'a [u8],
     pub code: &'a [u8],
@@ -14,6 +14,7 @@ impl<'a> Account<'a> {
 }
 
 // TODO: Update to use BTreeMap
+#[derive(Clone)]
 pub struct State<'a>(pub HashMap<&'a String, Account<'a>>);
 
 impl<'a> State<'a> {
