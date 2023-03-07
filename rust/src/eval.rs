@@ -918,7 +918,8 @@ fn log(machine: &mut Machine) -> ControlFlow {
 }
 
 fn call(machine: &mut Machine) -> ControlFlow {
-    let gas = machine.stack.pop().unwrap();
+    // TODO: handle gas
+    let _gas = machine.stack.pop().unwrap();
     let address = machine.stack.pop().unwrap();
     let value = machine.stack.pop().unwrap();
     let args_offset = machine.stack.pop().unwrap().as_usize();
@@ -952,13 +953,18 @@ fn call(machine: &mut Machine) -> ControlFlow {
         machine.block,
     );
 
-    // TODO: handle failures
     match &res.return_val {
         Some(value) => {
             machine.memory.set(ret_offset, *value, ret_size);
         }
         None => (),
     };
+
+    if res.success {
+        machine.stack.push(1.into());
+    } else {
+        machine.stack.push(0.into());
+    }
 
     ControlFlow::Continue(1)
 }
