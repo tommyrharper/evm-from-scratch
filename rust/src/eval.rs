@@ -1015,18 +1015,6 @@ fn eval_return(machine: &mut Machine) -> ControlFlow {
 }
 
 fn delegatecall(machine: &mut Machine) -> ControlFlow {
-
-    /* 
-    TODO:
-        - [x] persist current value for sender (Ia -> Is)
-        - [x] persist current value for value (Ip -> Iv)
-        - [x] Change context.address
-        - [x] Change context.caller???
-        - [x] Change context.value
-        - [x] Maintain storage
-        - [ ] handle return data
-        - [ ] handle account with no code (returns success as true)
-    */
     // TODO: handle gas
     let _gas = machine.stack.pop().unwrap();
     let address = machine.stack.pop().unwrap();
