@@ -77,7 +77,7 @@ impl Log {
 pub struct Machine<'a> {
     pub stack: Stack,
     pub memory: Memory,
-    pub storage: HashMap<U256, U256>,
+    pub storage: &'a mut HashMap<U256, U256>,
     pub return_data_buffer: Vec<u8>,
     pub environment: Environment<'a>,
     pub block: Block<'a>,
@@ -88,14 +88,19 @@ pub struct Machine<'a> {
 }
 
 impl<'a> Machine<'a> {
-    pub fn new(code: &'a [u8], environment: Environment<'a>, block: Block<'a>) -> Self {
+    pub fn new(
+        code: &'a [u8],
+        environment: Environment<'a>,
+        block: Block<'a>,
+        storage: &'a mut HashMap<U256, U256>,
+    ) -> Self {
         Self {
             stack: Stack::new(),
             memory: Memory::new(),
-            storage: HashMap::new(),
             jump_map: JumpMap::new(code),
-            logs: Vec::new(),
             return_data_buffer: Vec::new(),
+            logs: Vec::new(),
+            storage,
             environment,
             block,
             code,

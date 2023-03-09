@@ -75,6 +75,7 @@ impl Opcode {
     pub const LOG4: u8 = 0xa4;
     pub const CALL: u8 = 0xf1;
     pub const RETURN: u8 = 0xf3;
+    pub const DELEGATECALL: u8 = 0xf4;
     pub const REVERT: u8 = 0xfd;
     pub const INVALID: u8 = 0xfe;
 }

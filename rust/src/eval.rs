@@ -78,6 +78,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::LOG0..=Opcode::LOG4 => log(machine),
         Opcode::CALL => call(machine),
         Opcode::RETURN => eval_return(machine),
+        Opcode::DELEGATECALL => delegatecall(machine),
         Opcode::INVALID => invalid(machine),
         Opcode::REVERT => revert(machine),
         _ => exit_error(EvmError::InvalidInstruction),
@@ -86,6 +87,8 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
 
 // TODO: remove unwraps and handle failed stack pops
 // TODO: remove unnecessary mut references for machine
+// TODO: add and handle as_usize or fail
+// TODO: add 1024 stack limit
 
 fn stop(_machine: &mut Machine) -> ControlFlow {
     exit_success(ExitSuccess::Stop)
@@ -972,6 +975,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
             machine.environment.state.clone(),
         ),
         machine.block,
+        None,
     );
 
     match &res.return_val {
@@ -987,7 +991,9 @@ fn call(machine: &mut Machine) -> ControlFlow {
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;
         }
-        None => (),
+        None => {
+            machine.return_data_buffer = Vec::new();
+        },
     };
 
     if res.success {
@@ -1006,6 +1012,78 @@ fn eval_return(machine: &mut Machine) -> ControlFlow {
     let res = machine.memory.get(offset, size);
 
     exit_success(ExitSuccess::Return(U256::from_big_endian(res)))
+}
+
+fn delegatecall(machine: &mut Machine) -> ControlFlow {
+
+    /* 
+    TODO:
+        - [x] persist current value for sender (Ia -> Is)
+        - [x] persist current value for value (Ip -> Iv)
+        - [x] Change context.address
+        - [x] Change context.caller???
+        - [x] Change context.value
+        - [x] Maintain storage
+        - [ ] handle return data
+        - [ ] handle account with no code (returns success as true)
+    */
+    // TODO: handle gas
+    let _gas = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap();
+    let args_offset = machine.stack.pop().unwrap().as_usize();
+    let args_size = machine.stack.pop().unwrap().as_usize();
+    let ret_offset = machine.stack.pop().unwrap().as_usize();
+    let ret_size = machine.stack.pop().unwrap().as_usize();
+
+    let data = machine.memory.get(args_offset, args_size);
+
+    let code = machine.environment.state.get_account_code(address);
+
+    let mut address_bytes: [u8; 32] = [0; 32];
+    U256::to_big_endian(&address, &mut address_bytes);
+
+    let data_string = hex::encode(data);
+
+    let res = evm(
+        code,
+        Environment::new(
+            machine.environment.address,
+            machine.environment.caller,
+            machine.environment.origin,
+            machine.environment.gasprice,
+            machine.environment.value,
+            &data_string,
+            machine.environment.state.clone(),
+        ),
+        machine.block,
+        Some(&mut machine.storage),
+    );
+
+    match &res.return_val {
+        Some(value) => {
+            let mut return_val_bytes: [u8; 32] = [0; 32];
+            U256::to_big_endian(value, &mut return_val_bytes);
+            let return_val_without_padding: Vec<u8> = return_val_bytes
+                .to_vec()
+                .into_iter()
+                .skip_while(|x| *x == 0)
+                .collect();
+
+            machine.memory.set(ret_offset, *value, ret_size);
+            machine.return_data_buffer = return_val_without_padding;
+        }
+        None => {
+            machine.return_data_buffer = Vec::new();
+        },
+    };
+
+    if res.success {
+        machine.stack.push(1.into());
+    } else {
+        machine.stack.push(0.into());
+    }
+
+    ControlFlow::Continue(1)
 }
 
 fn revert(machine: &mut Machine) -> ControlFlow {
