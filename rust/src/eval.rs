@@ -676,10 +676,8 @@ fn extcodehash(machine: &mut Machine) -> ControlFlow {
 }
 
 fn returndatasize(machine: &mut Machine) -> ControlFlow {
-    // To implement this I need to implement a return_data_buffer vec, that keeps that data from CALL
-    // And I need to access the length from there
-    // It might be time to create a Runtime struct, but that could be avoided
     machine.stack.push(machine.return_data_buffer.len().into());
+
     ControlFlow::Continue(1)
 }
 
@@ -965,7 +963,16 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
+            let mut return_val_bytes: [u8; 32] = [0; 32];
+            U256::to_big_endian(value, &mut return_val_bytes);
+            let return_val_without_padding: Vec<u8> = return_val_bytes
+                .to_vec()
+                .into_iter()
+                .skip_while(|x| *x == 0)
+                .collect();
+
             machine.memory.set(ret_offset, *value, ret_size);
+            machine.return_data_buffer = return_val_without_padding;
         }
         None => (),
     };
