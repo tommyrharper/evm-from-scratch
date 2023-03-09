@@ -51,6 +51,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::EXTCODECOPY => extcodecopy(machine),
         Opcode::EXTCODEHASH => extcodehash(machine),
         Opcode::RETURNDATASIZE => returndatasize(machine),
+        Opcode::RETURNDATACOPY => returndatacopy(machine),
         Opcode::COINBASE => coinbase(machine),
         Opcode::TIMESTAMP => timestamp(machine),
         Opcode::NUMBER => number(machine),
@@ -677,6 +678,18 @@ fn extcodehash(machine: &mut Machine) -> ControlFlow {
 
 fn returndatasize(machine: &mut Machine) -> ControlFlow {
     machine.stack.push(machine.return_data_buffer.len().into());
+
+    ControlFlow::Continue(1)
+}
+
+fn returndatacopy(machine: &mut Machine) -> ControlFlow {
+    let dest_offset = machine.stack.pop().unwrap().as_usize();
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let return_data = U256::from_big_endian(&machine.return_data_buffer[offset..]);
+
+    machine.memory.set(dest_offset, return_data, size);
 
     ControlFlow::Continue(1)
 }
