@@ -68,6 +68,7 @@ pub struct Environment<'a> {
     // TODO: update this to be call_data for clarity
     pub data: &'a String,
     pub state: State<'a>,
+    pub is_static: bool,
 }
 
 impl<'a> Environment<'a> {
@@ -79,6 +80,7 @@ impl<'a> Environment<'a> {
         value: &'a [u8],
         data: &'a String,
         state: State<'a>,
+        is_static: bool,
     ) -> Self {
         Self {
             address,
@@ -88,6 +90,7 @@ impl<'a> Environment<'a> {
             value,
             data,
             state,
+            is_static,
         }
     }
 

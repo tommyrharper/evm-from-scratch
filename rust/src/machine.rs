@@ -30,6 +30,7 @@ pub enum EvmError {
     InvalidInstruction,
     InvalidJump,
     Revert(U256),
+    OpcodeNotStatic(u8)
 }
 
 enum EvmStatus {

@@ -7,7 +7,11 @@ use primitive_types::U256;
 use sha3::{Digest, Keccak256};
 
 pub fn eval(machine: &mut Machine) -> ControlFlow {
-    match machine.opcode() {
+    let opcode = machine.opcode();
+    if machine.environment.is_static && !Opcode::is_static(opcode) {
+        return exit_error(EvmError::OpcodeNotStatic(opcode));
+    }
+    match opcode {
         Opcode::STOP => stop(machine),
         Opcode::ADD => add(machine),
         Opcode::MUL => mul(machine),
@@ -79,6 +83,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::CALL => call(machine),
         Opcode::RETURN => eval_return(machine),
         Opcode::DELEGATECALL => delegatecall(machine),
+        Opcode::STATICCALL => staticcall(machine),
         Opcode::INVALID => invalid(machine),
         Opcode::REVERT => revert(machine),
         _ => exit_error(EvmError::InvalidInstruction),
@@ -973,6 +978,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
             &value_bytes[..],
             &data_string,
             machine.environment.state.clone(),
+            false,
         ),
         machine.block,
         None,
@@ -1042,9 +1048,72 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
             machine.environment.value,
             &data_string,
             machine.environment.state.clone(),
+            false,
         ),
         machine.block,
         Some(&mut machine.storage),
+    );
+
+    match &res.return_val {
+        Some(value) => {
+            let mut return_val_bytes: [u8; 32] = [0; 32];
+            U256::to_big_endian(value, &mut return_val_bytes);
+            let return_val_without_padding: Vec<u8> = return_val_bytes
+                .to_vec()
+                .into_iter()
+                .skip_while(|x| *x == 0)
+                .collect();
+
+            machine.memory.set(ret_offset, *value, ret_size);
+            machine.return_data_buffer = return_val_without_padding;
+        }
+        None => {
+            machine.return_data_buffer = Vec::new();
+        },
+    };
+
+    if res.success {
+        machine.stack.push(1.into());
+    } else {
+        machine.stack.push(0.into());
+    }
+
+    ControlFlow::Continue(1)
+}
+
+// TODO: merge call opcode shared logic into a single call function with a type enum passed in
+fn staticcall(machine: &mut Machine) -> ControlFlow {
+    // TODO: handle gas
+    let _gas = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap();
+    let args_offset = machine.stack.pop().unwrap().as_usize();
+    let args_size = machine.stack.pop().unwrap().as_usize();
+    let ret_offset = machine.stack.pop().unwrap().as_usize();
+    let ret_size = machine.stack.pop().unwrap().as_usize();
+
+    let data = machine.memory.get(args_offset, args_size);
+
+    let code = machine.environment.state.get_account_code(address);
+
+    let mut address_bytes: [u8; 32] = [0; 32];
+    U256::to_big_endian(&address, &mut address_bytes);
+
+    let data_string = hex::encode(data);
+
+    let res = evm(
+        code,
+        Environment::new(
+            &address_bytes[..],
+            machine.environment.address,
+            machine.environment.origin,
+            machine.environment.gasprice,
+            &[0],
+            &data_string,
+            machine.environment.state.clone(),
+            true,
+        ),
+        machine.block,
+        None,
     );
 
     match &res.return_val {

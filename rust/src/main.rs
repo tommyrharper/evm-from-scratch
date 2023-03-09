@@ -274,7 +274,9 @@ fn main() {
 
         let result = evm(
             &code,
-            Environment::new(&address, &caller, &origin, &gasprice, &value, &data, state),
+            Environment::new(
+                &address, &caller, &origin, &gasprice, &value, &data, state, false,
+            ),
             Block::new(
                 &coinbase,
                 &timestamp,
