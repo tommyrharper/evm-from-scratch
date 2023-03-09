@@ -57,3 +57,19 @@
 
 
 (w = JUMP ∧ μs[0] ∈/ D(Ib))
+
+## Execution evn info
+
+• Ia, the address of the account which owns the code that is executing.
+• Io, the sender address of the transaction that orig-
+inated this execution. (141)
+• Ip, the price of gas in the transaction that origi- nated this execution.
+• Id, the byte array that is the input data to this execution; if the execution agent is a transaction, this would be the transaction data.
+• Is, the address of the account which caused the code to be executing; if the execution agent is a transaction, this would be the transaction sender.
+• Iv, the value, in Wei, passed to this account as part of the same procedure as execution; if the execution agent is a transaction, this would be the transaction value.
+• Ib, the byte array that is the machine code to be executed.
+• IH, the block header of the present block.
+• Ie, the depth of the present message-call or contract-creation (i.e. the number of CALLs or
+CREATE(2)s being executed at present).
+• Iw, the permission to make modifications to the
+state.
