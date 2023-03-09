@@ -2376,6 +2376,28 @@
     }
   },
   {
+    "name": "DELEGATECALL (with no code)",
+    "hint": "Like CALL, but keep the transaction data (from, origin, address) and use the code from the other account",
+    "tx": {
+      "to": "0x1000000000000000000000000000000000000aaa"
+    },
+    "state": {
+      "0xdddddddddddddddddddddddddddddddddddddddd": {
+      }
+    },
+    "code": {
+      "asm": "PUSH1 0\nDUP1\nDUP1\nDUP1\nPUSH20 0xdddddddddddddddddddddddddddddddddddddddd\nGAS\nDELEGATECALL\nPUSH1 0\nSLOAD",
+      "bin": "600080808073dddddddddddddddddddddddddddddddddddddddd5af4600054"
+    },
+    "expect": {
+      "stack": [
+        "0x0000000000000000000000000000000000000000",
+        "0x1"
+      ],
+      "success": true
+    }
+  },
+  {
     "name": "STATICCALL",
     "hint": "Like CALL, but disable state modifications",
     "state": {
