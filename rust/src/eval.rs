@@ -84,6 +84,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
 }
 
 // TODO: remove unwraps and handle failed stack pops
+// TODO: remove unnecessary mut references for machine
 
 fn stop(_machine: &mut Machine) -> ControlFlow {
     exit_success(ExitSuccess::Stop)
@@ -678,6 +679,7 @@ fn returndatasize(machine: &mut Machine) -> ControlFlow {
     // To implement this I need to implement a return_data_buffer vec, that keeps that data from CALL
     // And I need to access the length from there
     // It might be time to create a Runtime struct, but that could be avoided
+    machine.stack.push(machine.return_data_buffer.len().into());
     ControlFlow::Continue(1)
 }
 

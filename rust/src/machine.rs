@@ -78,11 +78,12 @@ pub struct Machine<'a> {
     pub stack: Stack,
     pub memory: Memory,
     pub storage: HashMap<U256, U256>,
-    pub jump_map: JumpMap,
-    pub logs: Vec<Log>,
-    pub code: &'a [u8],
+    pub return_data_buffer: Vec<u8>,
     pub environment: Environment<'a>,
     pub block: Block<'a>,
+    pub jump_map: JumpMap,
+    pub code: &'a [u8],
+    pub logs: Vec<Log>,
     pub pc: usize,
 }
 
@@ -94,6 +95,7 @@ impl<'a> Machine<'a> {
             storage: HashMap::new(),
             jump_map: JumpMap::new(code),
             logs: Vec::new(),
+            return_data_buffer: Vec::new(),
             environment,
             block,
             code,
