@@ -58,12 +58,14 @@ impl<'a> State<'a> {
     }
 }
 
+// TODO: update ot be called Context??
 pub struct Environment<'a> {
     pub address: &'a [u8],
     pub caller: &'a [u8],
     pub origin: &'a [u8],
     pub gasprice: &'a [u8],
     pub value: &'a [u8],
+    // TODO: update this to be call_data for clarity
     pub data: &'a String,
     pub state: State<'a>,
 }
