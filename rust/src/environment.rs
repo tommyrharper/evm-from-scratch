@@ -68,6 +68,7 @@ impl State {
 }
 
 // TODO: update ot be called Context??
+// TODO: update addresses to be H160
 pub struct Environment<'a> {
     // TODO: update to U256???
     pub address: &'a [u8],
