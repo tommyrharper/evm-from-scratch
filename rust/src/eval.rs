@@ -962,7 +962,7 @@ fn create<'a>(machine: &mut Machine) -> ControlFlow {
     stream.append(&machine.environment.address.to_vec()); // try both .address and .caller
     stream.append(&nonce);
 
-    let address_bytes = Keccak256::digest(&stream.out());
+    let address_bytes = &Keccak256::digest(&stream.out())[12..];
     let address = U256::from_big_endian(&address_bytes);
 
     let mut value_bytes: [u8; 32] = [0; 32];
