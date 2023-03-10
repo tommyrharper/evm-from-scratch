@@ -979,6 +979,11 @@ fn create(machine: &mut Machine) -> ControlFlow {
         None,
     );
 
+    if !res.success {
+        machine.stack.push(0.into());
+        return ControlFlow::Continue(1);
+    }
+
     // code = return value of initialisation code
     match &res.return_val {
         // TODO: deal with code over 32_bytes long => update return val type to Vec<u8>
@@ -990,11 +995,10 @@ fn create(machine: &mut Machine) -> ControlFlow {
             // This could cut off an (unlikely) initial stop opcode. Update return_val to be a Vec<u8>
             let code_vec = u256_to_vec_u8_without_padding(code);
 
-            machine.environment.state.add_or_update_account(
-                address_u256,
-                value,
-                code_vec,
-            );
+            machine
+                .environment
+                .state
+                .add_or_update_account(address_u256, value, code_vec);
         }
         None => {
             machine
