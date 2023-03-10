@@ -3,7 +3,7 @@ use crate::environment::Environment;
 use crate::machine::{ControlFlow, EvmError, ExitSuccess, Log, Machine};
 use crate::opcode::Opcode;
 use crate::{evm, helpers::*};
-use primitive_types::{U256};
+use primitive_types::U256;
 use sha3::{Digest, Keccak256};
 
 pub fn eval(machine: &mut Machine) -> ControlFlow {
@@ -658,7 +658,6 @@ fn extcodesize(machine: &mut Machine) -> ControlFlow {
 
 // TODO: remove all println statements
 fn extcodecopy(machine: &mut Machine) -> ControlFlow {
-    // println!("extcodehash start - stack {:?}", machine.stack.data());
     let address = machine.stack.pop().unwrap();
     let dest_offset = machine.stack.pop().unwrap().as_usize();
     let offset = machine.stack.pop().unwrap().as_usize();
@@ -667,8 +666,8 @@ fn extcodecopy(machine: &mut Machine) -> ControlFlow {
     let account_code = machine.environment.state.get_account_code(address);
     let code = arr_slice_extend(&account_code[..], offset, size);
 
+    // TODO: set vec<u8> instead of U256 => code could be longer. update in other place as well
     machine.memory.set(dest_offset, code, size);
-
     ControlFlow::Continue(1)
 }
 
@@ -782,8 +781,9 @@ fn mload(machine: &mut Machine) -> ControlFlow {
     let byte_offset = machine.stack.pop().unwrap();
 
     let res = machine.memory.get(byte_offset.as_usize(), WORD_BYTES);
+    let res_word = U256::from_big_endian(res);
 
-    machine.stack.push(U256::from_big_endian(res));
+    machine.stack.push(res_word);
     ControlFlow::Continue(1)
 }
 
@@ -949,8 +949,7 @@ fn log(machine: &mut Machine) -> ControlFlow {
 }
 
 // TODO: sender_nonce => starts as 0 but increments each CREATE: todo: increment & test incrementation of this value
-fn create<'a>(machine: &mut Machine) -> ControlFlow {
-    // println!("create start - stack {:?}", machine.stack.data());
+fn create(machine: &mut Machine) -> ControlFlow {
     let value = machine.stack.pop().unwrap();
     let offset = machine.stack.pop().unwrap().as_usize();
     let size = machine.stack.pop().unwrap().as_usize();
@@ -984,16 +983,18 @@ fn create<'a>(machine: &mut Machine) -> ControlFlow {
     match &res.return_val {
         // TODO: deal with code over 32_bytes long => update return val type to Vec<u8>
         Some(code) => {
-            // let mut code_bytes = Vec::new();
-            // code.to_big_endian(&mut code_bytes);
             // TODO: what if code is more than 32 bytes????
             let mut code_bytes: [u8; 32] = [0; 32];
             U256::to_big_endian(code, &mut code_bytes);
 
-            machine
-                .environment
-                .state
-                .add_or_update_account(address_u256, value, code_bytes.to_vec());
+            // This could cut off an (unlikely) initial stop opcode. Update return_val to be a Vec<u8>
+            let code_vec = u256_to_vec_u8_without_padding(code);
+
+            machine.environment.state.add_or_update_account(
+                address_u256,
+                value,
+                code_vec,
+            );
         }
         None => {
             machine
@@ -1050,13 +1051,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
-            let mut return_val_bytes: [u8; 32] = [0; 32];
-            U256::to_big_endian(value, &mut return_val_bytes);
-            let return_val_without_padding: Vec<u8> = return_val_bytes
-                .to_vec()
-                .into_iter()
-                .skip_while(|x| *x == 0)
-                .collect();
+            let return_val_without_padding = u256_to_vec_u8_without_padding(value);
 
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;
@@ -1120,13 +1115,7 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
-            let mut return_val_bytes: [u8; 32] = [0; 32];
-            U256::to_big_endian(value, &mut return_val_bytes);
-            let return_val_without_padding: Vec<u8> = return_val_bytes
-                .to_vec()
-                .into_iter()
-                .skip_while(|x| *x == 0)
-                .collect();
+            let return_val_without_padding = u256_to_vec_u8_without_padding(value);
 
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;
@@ -1182,13 +1171,7 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
-            let mut return_val_bytes: [u8; 32] = [0; 32];
-            U256::to_big_endian(value, &mut return_val_bytes);
-            let return_val_without_padding: Vec<u8> = return_val_bytes
-                .to_vec()
-                .into_iter()
-                .skip_while(|x| *x == 0)
-                .collect();
+            let return_val_without_padding = u256_to_vec_u8_without_padding(value);
 
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;
