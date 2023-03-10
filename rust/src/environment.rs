@@ -1,14 +1,14 @@
-use std::collections::HashMap;
 use primitive_types::U256;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
-pub struct Account<'a> {
-    pub balance: &'a [u8],
-    pub code: &'a [u8],
+pub struct Account {
+    pub balance: U256,
+    pub code: Vec<u8>,
 }
 
-impl<'a> Account<'a> {
-    pub fn new(balance: &'a [u8], code: &'a [u8]) -> Self {
+impl Account {
+    pub fn new(balance: U256, code: Vec<u8>) -> Self {
         Self { balance, code }
     }
 }
@@ -16,54 +16,53 @@ impl<'a> Account<'a> {
 // TODO: Update to use BTreeMap
 // TODO: update to_string to to_owned across codebase where possible
 #[derive(Clone)]
-pub struct State<'a>(pub HashMap<String, Account<'a>>);
+pub struct State(pub HashMap<String, Account>);
 
-impl<'a> State<'a> {
+impl State {
     pub fn new() -> Self {
         let map = HashMap::<String, Account>::new();
         Self(map)
     }
 
-    pub fn add_accounts(&mut self, address_balances: &Vec<(String, &'a [u8], &'a [u8])>) {
+    pub fn add_accounts(&mut self, address_balances: &Vec<(String, Vec<u8>, Vec<u8>)>) {
         for (address, balance, code) in address_balances {
-            self.add_account(address.to_owned(), balance, code);
+            self.add_account(
+                address.to_owned(),
+                U256::from_big_endian(balance),
+                code.clone(),
+            );
         }
     }
 
-    pub fn add_account(&mut self, address: String, balance: &'a [u8], code: &'a [u8]) {
+    pub fn add_account(&mut self, address: String, balance: U256, code: Vec<u8>) {
         self.0.insert(address, Account::new(balance, code));
     }
 
-    pub fn create_contract(&mut self, address: U256, code: &'a [u8]) {
-        let balance = self.get_account_balance(address);
-        let mut bytes_balance: [u8; 32] = [0; 32];
-        U256::to_big_endian(&balance, &mut bytes_balance);
+    pub fn add_or_update_account(&mut self, address: U256, balance: U256, code: Vec<u8>) {
+        let prev_balance = self.get_account_balance(address);
+        let new_balance = balance + prev_balance;
 
-        // self.0.insert(address.to_string(), Account::new(&bytes_balance, code));
+        self.0.insert(address.to_string(), Account::new(new_balance, code));
     }
 
-    pub fn get_account_code(&self, address: U256) -> &[u8] {
+    pub fn get_account_code(&self, address: U256) -> Vec<u8> {
         let address_string = format! {"{:X}", address};
         let balance = self.0.get(&address_string);
 
-        let code = match balance {
-            Some(account) => account.code,
-            None => &[],
-        };
-
-        code
+        match balance {
+            Some(account) => account.code.clone(),
+            None => vec![],
+        }
     }
 
     pub fn get_account_balance(&self, address: U256) -> U256 {
         let address_string = format! {"{:X}", address};
         let account = self.0.get(&address_string);
 
-        let balance = match account {
+        match account {
             Some(account) => account.balance,
-            None => &[0],
-        };
-
-        U256::from_big_endian(balance)
+            None => U256::zero(),
+        }
     }
 }
 
@@ -76,7 +75,7 @@ pub struct Environment<'a> {
     pub value: &'a [u8],
     // TODO: update this to be call_data for clarity
     pub data: &'a String,
-    pub state: State<'a>,
+    pub state: State,
     pub is_static: bool,
 }
 
@@ -88,7 +87,7 @@ impl<'a> Environment<'a> {
         gasprice: &'a [u8],
         value: &'a [u8],
         data: &'a String,
-        state: State<'a>,
+        state: State,
         is_static: bool,
     ) -> Self {
         Self {

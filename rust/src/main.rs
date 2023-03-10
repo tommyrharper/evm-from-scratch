@@ -62,19 +62,7 @@ impl StateData {
     }
 
     // TODO: clean up mess
-    pub fn account_data(
-        address_balances_vecs: &Vec<(String, Vec<u8>, Vec<u8>)>,
-    ) -> Vec<(String, &[u8], &[u8])> {
-        address_balances_vecs
-            .iter()
-            .map(|(address, balance, code)| {
-                (address.to_owned(), balance.as_slice(), code.as_slice())
-            })
-            .collect()
-    }
-
-    // TODO: clean up mess
-    pub fn account_data_vecs(&self) -> Vec<(String, Vec<u8>, Vec<u8>)> {
+    pub fn account_data(&self) -> Vec<(String, Vec<u8>, Vec<u8>)> {
         self.0
             .iter()
             .map(|(address, account_data)| {
@@ -263,12 +251,10 @@ fn main() {
             None => vec![],
         };
 
-        let account_data_vecs = match &test.state {
-            Some(state) => state.account_data_vecs(),
-            None => StateData::new().account_data_vecs(),
+        let account_data = match &test.state {
+            Some(state) => state.account_data(),
+            None => StateData::new().account_data(),
         };
-
-        let account_data = StateData::account_data(&account_data_vecs);
 
         let mut state: State = State::new();
 
