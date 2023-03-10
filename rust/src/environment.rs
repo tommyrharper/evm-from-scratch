@@ -14,23 +14,32 @@ impl<'a> Account<'a> {
 }
 
 // TODO: Update to use BTreeMap
+// TODO: update to_string to to_owned across codebase where possible
 #[derive(Clone)]
-pub struct State<'a>(pub HashMap<&'a String, Account<'a>>);
+pub struct State<'a>(pub HashMap<String, Account<'a>>);
 
 impl<'a> State<'a> {
     pub fn new() -> Self {
-        let map = HashMap::<&String, Account>::new();
+        let map = HashMap::<String, Account>::new();
         Self(map)
     }
 
-    pub fn add_accounts(&mut self, address_balances: &Vec<(&'a String, &'a [u8], &'a [u8])>) {
+    pub fn add_accounts(&mut self, address_balances: &Vec<(String, &'a [u8], &'a [u8])>) {
         for (address, balance, code) in address_balances {
-            self.add_account(address, balance, code);
+            self.add_account(address.to_owned(), balance, code);
         }
     }
 
-    pub fn add_account(&mut self, address: &'a String, balance: &'a [u8], code: &'a [u8]) {
+    pub fn add_account(&mut self, address: String, balance: &'a [u8], code: &'a [u8]) {
         self.0.insert(address, Account::new(balance, code));
+    }
+
+    pub fn create_contract(&mut self, address: U256, code: &'a [u8]) {
+        let balance = self.get_account_balance(address);
+        let mut bytes_balance: [u8; 32] = [0; 32];
+        U256::to_big_endian(&balance, &mut bytes_balance);
+
+        // self.0.insert(address.to_string(), Account::new(&bytes_balance, code));
     }
 
     pub fn get_account_code(&self, address: U256) -> &[u8] {

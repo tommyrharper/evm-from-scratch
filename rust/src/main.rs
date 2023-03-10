@@ -64,10 +64,12 @@ impl StateData {
     // TODO: clean up mess
     pub fn account_data(
         address_balances_vecs: &Vec<(String, Vec<u8>, Vec<u8>)>,
-    ) -> Vec<(&String, &[u8], &[u8])> {
+    ) -> Vec<(String, &[u8], &[u8])> {
         address_balances_vecs
             .iter()
-            .map(|(address, balance, code)| (address, balance.as_slice(), code.as_slice()))
+            .map(|(address, balance, code)| {
+                (address.to_owned(), balance.as_slice(), code.as_slice())
+            })
             .collect()
     }
 
