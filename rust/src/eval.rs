@@ -3,7 +3,7 @@ use crate::environment::Environment;
 use crate::machine::{ControlFlow, EvmError, ExitSuccess, Log, Machine};
 use crate::opcode::Opcode;
 use crate::{evm, helpers::*};
-use primitive_types::U256;
+use primitive_types::{U256};
 use sha3::{Digest, Keccak256};
 
 pub fn eval(machine: &mut Machine) -> ControlFlow {
@@ -656,7 +656,9 @@ fn extcodesize(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+// TODO: remove all println statements
 fn extcodecopy(machine: &mut Machine) -> ControlFlow {
+    // println!("extcodehash start - stack {:?}", machine.stack.data());
     let address = machine.stack.pop().unwrap();
     let dest_offset = machine.stack.pop().unwrap().as_usize();
     let offset = machine.stack.pop().unwrap().as_usize();
@@ -946,24 +948,17 @@ fn log(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+// TODO: sender_nonce => starts as 0 but increments each CREATE: todo: increment & test incrementation of this value
 fn create<'a>(machine: &mut Machine) -> ControlFlow {
+    // println!("create start - stack {:?}", machine.stack.data());
     let value = machine.stack.pop().unwrap();
     let offset = machine.stack.pop().unwrap().as_usize();
     let size = machine.stack.pop().unwrap().as_usize();
 
     let initialisation_code = machine.memory.get(offset, size);
 
-    // address = keccak256(rlp([sender_address,sender_nonce]))[12:]
-
-    // TODO: see if use of vecs can be removed here
-    // TODO: sender_nonce => starts as 0 but increments each CREATE: todo: increment & test incrementation of this value
-    let nonce: Vec<u8> = vec![0];
-    let mut stream = rlp::RlpStream::new_list(2);
-    stream.append(&machine.environment.address.to_vec()); // try both .address and .caller
-    stream.append(&nonce);
-
-    let address_bytes = &Keccak256::digest(&stream.out())[12..];
-    let address = U256::from_big_endian(&address_bytes);
+    let address = create_address(machine.environment.address, 0.into());
+    let address_u256 = U256::from_big_endian(address.as_bytes());
 
     let mut value_bytes: [u8; 32] = [0; 32];
     U256::to_big_endian(&value, &mut value_bytes);
@@ -971,7 +966,7 @@ fn create<'a>(machine: &mut Machine) -> ControlFlow {
     let res = evm(
         initialisation_code,
         Environment::new(
-            &address_bytes,
+            address.as_bytes(),
             machine.environment.address,
             machine.environment.origin,
             machine.environment.gasprice,
@@ -989,24 +984,28 @@ fn create<'a>(machine: &mut Machine) -> ControlFlow {
     match &res.return_val {
         // TODO: deal with code over 32_bytes long => update return val type to Vec<u8>
         Some(code) => {
-            let mut code_bytes = Vec::new();
-            code.to_big_endian(&mut code_bytes);
+            // let mut code_bytes = Vec::new();
+            // code.to_big_endian(&mut code_bytes);
+            // TODO: what if code is more than 32 bytes????
+            let mut code_bytes: [u8; 32] = [0; 32];
+            U256::to_big_endian(code, &mut code_bytes);
+
             machine
                 .environment
                 .state
-                .add_or_update_account(address, value, code_bytes);
+                .add_or_update_account(address_u256, value, code_bytes.to_vec());
         }
         None => {
             machine
                 .environment
                 .state
-                .add_or_update_account(address, value, Vec::new());
+                .add_or_update_account(address_u256, value, Vec::new());
         }
     }
 
     // UPDATE STATE
 
-    machine.stack.push(address);
+    machine.stack.push(address_u256);
 
     ControlFlow::Continue(1)
 }
