@@ -1,6 +1,16 @@
 use std::ops::{Add, Div, Sub};
-use primitive_types::U256;
+use primitive_types::{U256, H160, H256};
+use sha3::{Keccak256, Digest};
 use crate::machine::{ControlFlow, EvmError, ExitReason, ExitSuccess};
+
+
+pub fn create_address(caller: &[u8], nonce: U256) -> H160 {
+    let caller_address_hex = H160::from_slice(caller);
+	let mut stream = rlp::RlpStream::new_list(2);
+	stream.append(&caller_address_hex);
+	stream.append(&nonce);
+	H256::from_slice(Keccak256::digest(&stream.out()).as_slice()).into()
+}
 
 pub fn exit_error(err: EvmError) -> ControlFlow {
     ControlFlow::Exit(ExitReason::Error(err))
