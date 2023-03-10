@@ -3,6 +3,16 @@ use primitive_types::{U256, H160, H256};
 use sha3::{Keccak256, Digest};
 use crate::machine::{ControlFlow, EvmError, ExitReason, ExitSuccess};
 
+pub fn u256_to_vec_u8_without_padding(value: &U256) -> Vec<u8> {
+    let mut return_val_bytes: [u8; 32] = [0; 32];
+    U256::to_big_endian(value, &mut return_val_bytes);
+    let return_val_without_padding: Vec<u8> = return_val_bytes
+        .to_vec()
+        .into_iter()
+        .skip_while(|x| *x == 0)
+        .collect();
+    return_val_without_padding
+}
 
 pub fn create_address(caller: &[u8], nonce: U256) -> H160 {
     let caller_address_hex = H160::from_slice(caller);
