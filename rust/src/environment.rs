@@ -41,8 +41,9 @@ impl State {
     pub fn add_or_update_account(&mut self, address: U256, balance: U256, code: Vec<u8>) {
         let prev_balance = self.get_account_balance(address);
         let new_balance = balance + prev_balance;
+        let address_string = format! {"{:X}", address};
 
-        self.0.insert(address.to_string(), Account::new(new_balance, code));
+        self.0.insert(address_string, Account::new(new_balance, code));
     }
 
     pub fn get_account_code(&self, address: U256) -> Vec<u8> {
@@ -68,10 +69,13 @@ impl State {
 
 // TODO: update ot be called Context??
 pub struct Environment<'a> {
+    // TODO: update to U256???
     pub address: &'a [u8],
     pub caller: &'a [u8],
     pub origin: &'a [u8],
+    // TODO: update to U256
     pub gasprice: &'a [u8],
+    // TODO: update to U256, handle overlap with State.Account.balance
     pub value: &'a [u8],
     // TODO: update this to be call_data for clarity
     pub data: &'a String,

@@ -80,6 +80,7 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::DUP1..=Opcode::DUP16 => dup(machine),
         Opcode::SWAP1..=Opcode::SWAP16 => swap(machine),
         Opcode::LOG0..=Opcode::LOG4 => log(machine),
+        Opcode::CREATE => create(machine),
         Opcode::CALL => call(machine),
         Opcode::RETURN => eval_return(machine),
         Opcode::DELEGATECALL => delegatecall(machine),
@@ -547,10 +548,9 @@ fn address(machine: &mut Machine) -> ControlFlow {
 
 fn balance(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap();
+    let balance = machine.environment.state.get_account_balance(address);
 
-    machine
-        .stack
-        .push(machine.environment.state.get_account_balance(address));
+    machine.stack.push(balance);
 
     ControlFlow::Continue(1)
 }
@@ -663,7 +663,7 @@ fn extcodecopy(machine: &mut Machine) -> ControlFlow {
     let size = machine.stack.pop().unwrap().as_usize();
 
     let account_code = machine.environment.state.get_account_code(address);
-    let code = arr_slice_extend(account_code, offset, size);
+    let code = arr_slice_extend(&account_code[..], offset, size);
 
     machine.memory.set(dest_offset, code, size);
 
@@ -946,6 +946,71 @@ fn log(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+fn create<'a>(machine: &mut Machine) -> ControlFlow {
+    let value = machine.stack.pop().unwrap();
+    let offset = machine.stack.pop().unwrap().as_usize();
+    let size = machine.stack.pop().unwrap().as_usize();
+
+    let initialisation_code = machine.memory.get(offset, size);
+
+    // address = keccak256(rlp([sender_address,sender_nonce]))[12:]
+
+    // TODO: see if use of vecs can be removed here
+    // TODO: sender_nonce => starts as 0 but increments each CREATE: todo: increment & test incrementation of this value
+    let nonce: Vec<u8> = vec![0];
+    let mut stream = rlp::RlpStream::new_list(2);
+    stream.append(&machine.environment.address.to_vec()); // try both .address and .caller
+    stream.append(&nonce);
+
+    let address_bytes = Keccak256::digest(&stream.out());
+    let address = U256::from_big_endian(&address_bytes);
+
+    let mut value_bytes: [u8; 32] = [0; 32];
+    U256::to_big_endian(&value, &mut value_bytes);
+
+    let res = evm(
+        initialisation_code,
+        Environment::new(
+            &address_bytes,
+            machine.environment.address,
+            machine.environment.origin,
+            machine.environment.gasprice,
+            // QUESTION??? should value be 0 at this point? And then just sent after?
+            &value_bytes[..],
+            &String::new(),
+            machine.environment.state.clone(),
+            false,
+        ),
+        machine.block,
+        None,
+    );
+
+    // code = return value of initialisation code
+    match &res.return_val {
+        // TODO: deal with code over 32_bytes long => update return val type to Vec<u8>
+        Some(code) => {
+            let mut code_bytes = Vec::new();
+            code.to_big_endian(&mut code_bytes);
+            machine
+                .environment
+                .state
+                .add_or_update_account(address, value, code_bytes);
+        }
+        None => {
+            machine
+                .environment
+                .state
+                .add_or_update_account(address, value, Vec::new());
+        }
+    }
+
+    // UPDATE STATE
+
+    machine.stack.push(address);
+
+    ControlFlow::Continue(1)
+}
+
 fn call(machine: &mut Machine) -> ControlFlow {
     // TODO: handle gas
     let _gas = machine.stack.pop().unwrap();
@@ -999,7 +1064,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
         }
         None => {
             machine.return_data_buffer = Vec::new();
-        },
+        }
     };
 
     if res.success {
@@ -1069,7 +1134,7 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
         }
         None => {
             machine.return_data_buffer = Vec::new();
-        },
+        }
     };
 
     if res.success {
@@ -1131,7 +1196,7 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
         }
         None => {
             machine.return_data_buffer = Vec::new();
-        },
+        }
     };
 
     if res.success {
