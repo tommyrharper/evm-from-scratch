@@ -15,7 +15,7 @@ impl Account {
 
 // TODO: Update to use BTreeMap
 // TODO: update to_string to to_owned across codebase where possible
-// TODO: Update String to H160
+// TODO: Move out of context
 #[derive(Clone)]
 pub struct State(pub HashMap<H160, Account>);
 

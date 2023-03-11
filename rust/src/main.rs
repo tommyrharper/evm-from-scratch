@@ -1,8 +1,10 @@
-use evm::environment::Environment;
-use evm::evm;
-use evm::helpers::{hex_decode_with_prefix, Convert};
-use evm::state::State;
-use evm::{block::Block, helpers::add_padding};
+use evm::{
+    evm,
+    block::Block,
+    context::Context,
+    helpers::{hex_decode_with_prefix, Convert},
+    state::State,
+};
 use primitive_types::{H160, U256};
 use serde::Deserialize;
 use std::{collections::HashMap, str::FromStr};
@@ -234,15 +236,8 @@ fn main() {
 
         let result = evm(
             &code,
-            Environment::new(
-                address,
-                caller,
-                origin,
-                gasprice,
-                value,
-                &data,
-                state,
-                false,
+            Context::new(
+                address, caller, origin, gasprice, value, &data, state, false,
             ),
             Block::new(
                 &coinbase,

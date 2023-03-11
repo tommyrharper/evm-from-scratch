@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use crate::block::Block;
-use crate::environment::Environment;
+use crate::{block::Block, context::Context};
 use crate::eval::eval;
 use crate::jump_map::JumpMap;
 use crate::memory::Memory;
@@ -84,7 +83,7 @@ pub struct Machine<'a> {
     pub memory: Memory,
     pub storage: &'a mut HashMap<U256, U256>,
     pub return_data_buffer: Vec<u8>,
-    pub environment: Environment<'a>,
+    pub context: Context<'a>,
     pub block: Block<'a>,
     pub jump_map: JumpMap,
     pub code: &'a [u8],
@@ -95,7 +94,7 @@ pub struct Machine<'a> {
 impl<'a> Machine<'a> {
     pub fn new(
         code: &'a [u8],
-        environment: Environment<'a>,
+        context: Context<'a>,
         block: Block<'a>,
         storage: &'a mut HashMap<U256, U256>,
     ) -> Self {
@@ -106,7 +105,7 @@ impl<'a> Machine<'a> {
             return_data_buffer: Vec::new(),
             logs: Vec::new(),
             storage,
-            environment,
+            context,
             block,
             code,
             pc: 0,
@@ -148,7 +147,7 @@ impl<'a> Machine<'a> {
                                 success: true,
                                 error: None,
                                 logs: self.logs.clone(),
-                                state: self.environment.state.clone(),
+                                state: self.context.state.clone(),
                                 return_val: Some(val),
                             }
                         }
@@ -159,7 +158,7 @@ impl<'a> Machine<'a> {
                             success: false,
                             error: Some(error),
                             logs: self.logs.clone(),
-                            state: self.environment.state.clone(),
+                            state: self.context.state.clone(),
                             return_val: match &error {
                                 EvmError::Revert(val) => Some(*val),
                                 _ => None,
@@ -175,7 +174,7 @@ impl<'a> Machine<'a> {
             success: true,
             error: None,
             logs: self.logs.clone(),
-            state: self.environment.state.clone(),
+            state: self.context.state.clone(),
             return_val: None,
         };
     }

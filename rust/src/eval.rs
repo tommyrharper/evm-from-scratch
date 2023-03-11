@@ -1,5 +1,5 @@
 use crate::consts::WORD_BYTES;
-use crate::environment::Environment;
+use crate::context::Context;
 use crate::machine::{ControlFlow, EvmError, ExitSuccess, Log, Machine};
 use crate::opcode::Opcode;
 use crate::{evm, helpers::*};
@@ -8,7 +8,7 @@ use sha3::{Digest, Keccak256};
 
 pub fn eval(machine: &mut Machine) -> ControlFlow {
     let opcode = machine.opcode();
-    if machine.environment.is_static && !Opcode::is_static(opcode) {
+    if machine.context.is_static && !Opcode::is_static(opcode) {
         return exit_error(EvmError::OpcodeNotStatic(opcode));
     }
     match opcode {
@@ -542,14 +542,14 @@ fn keccak256(machine: &mut Machine) -> ControlFlow {
 fn address(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(machine.environment.address.to_u256());
+        .push(machine.context.address.to_u256());
 
     ControlFlow::Continue(1)
 }
 
 fn balance(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap().to_h160();
-    let balance = machine.environment.state.get_account_balance(address);
+    let balance = machine.context.state.get_account_balance(address);
 
     machine.stack.push(balance);
 
@@ -559,7 +559,7 @@ fn balance(machine: &mut Machine) -> ControlFlow {
 fn origin(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(machine.environment.origin.to_u256());
+        .push(machine.context.origin.to_u256());
 
     ControlFlow::Continue(1)
 }
@@ -567,13 +567,13 @@ fn origin(machine: &mut Machine) -> ControlFlow {
 fn caller(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(machine.environment.caller.to_u256());
+        .push(machine.context.caller.to_u256());
 
     ControlFlow::Continue(1)
 }
 
 fn callvalue(machine: &mut Machine) -> ControlFlow {
-    machine.stack.push(machine.environment.value);
+    machine.stack.push(machine.context.value);
 
     ControlFlow::Continue(1)
 }
@@ -583,7 +583,7 @@ fn calldataload(machine: &mut Machine) -> ControlFlow {
 
     machine.stack.push(
         machine
-            .environment
+            .context
             .load_calldata(byte_offset.as_usize(), WORD_BYTES),
     );
 
@@ -591,7 +591,7 @@ fn calldataload(machine: &mut Machine) -> ControlFlow {
 }
 
 fn calldatasize(machine: &mut Machine) -> ControlFlow {
-    machine.stack.push(machine.environment.calldata_size());
+    machine.stack.push(machine.context.calldata_size());
 
     ControlFlow::Continue(1)
 }
@@ -603,7 +603,7 @@ fn calldatacopy(machine: &mut Machine) -> ControlFlow {
     let size = machine.stack.pop().unwrap();
 
     let calldata = machine
-        .environment
+        .context
         .load_calldata(offset.as_usize(), size.as_usize());
 
     machine
@@ -640,7 +640,7 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
     // TODO: implement gas price properly
     machine
         .stack
-        .push(machine.environment.gasprice);
+        .push(machine.context.gasprice);
 
     ControlFlow::Continue(1)
 }
@@ -648,7 +648,7 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
 fn extcodesize(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap().to_h160();
 
-    let code = machine.environment.state.get_account_code(address);
+    let code = machine.context.state.get_account_code(address);
 
     machine.stack.push(code.len().into());
 
@@ -661,7 +661,7 @@ fn extcodecopy(machine: &mut Machine) -> ControlFlow {
     let offset = machine.stack.pop().unwrap().as_usize();
     let size = machine.stack.pop().unwrap().as_usize();
 
-    let account_code = machine.environment.state.get_account_code(address);
+    let account_code = machine.context.state.get_account_code(address);
     let code = arr_slice_extend(&account_code[..], offset, size);
 
     // TODO: set vec<u8> instead of U256 => code could be longer. update in other place as well
@@ -672,7 +672,7 @@ fn extcodecopy(machine: &mut Machine) -> ControlFlow {
 fn extcodehash(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap().to_h160();
 
-    let account_code = machine.environment.state.get_account_code(address);
+    let account_code = machine.context.state.get_account_code(address);
     if account_code.len() == 0 {
         machine.stack.push(0.into());
     } else {
@@ -750,9 +750,9 @@ fn chainid(machine: &mut Machine) -> ControlFlow {
 }
 
 fn selfbalance(machine: &mut Machine) -> ControlFlow {
-    let address = machine.environment.address;
+    let address = machine.context.address;
     let balance = machine
-        .environment
+        .context
         .state
         .get_account_balance(address);
 
@@ -934,7 +934,7 @@ fn log(machine: &mut Machine) -> ControlFlow {
 
     let data = machine.memory.get(offset, size);
 
-    let mut new_log = Log::new(machine.environment.address, data);
+    let mut new_log = Log::new(machine.context.address, data);
 
     for _i in 0..n {
         let topic = machine.stack.pop().unwrap();
@@ -954,22 +954,22 @@ fn create(machine: &mut Machine) -> ControlFlow {
 
     let initialisation_code = machine.memory.get(offset, size);
 
-    let address = create_address(machine.environment.address, 0.into());
+    let address = create_address(machine.context.address, 0.into());
 
     let mut value_bytes: [u8; 32] = [0; 32];
     U256::to_big_endian(&value, &mut value_bytes);
 
     let res = evm(
         initialisation_code,
-        Environment::new(
+        Context::new(
             address,
-            machine.environment.address,
-            machine.environment.origin,
-            machine.environment.gasprice,
+            machine.context.address,
+            machine.context.origin,
+            machine.context.gasprice,
             // QUESTION??? should value be 0 at this point? And then just sent after?
             U256::from_big_endian(&value_bytes),
             &String::new(),
-            machine.environment.state.clone(),
+            machine.context.state.clone(),
             false,
         ),
         machine.block,
@@ -981,7 +981,7 @@ fn create(machine: &mut Machine) -> ControlFlow {
         return ControlFlow::Continue(1);
     }
 
-    machine.environment.state = res.state;
+    machine.context.state = res.state;
 
     // code = return value of initialisation code
     match &res.return_val {
@@ -995,13 +995,13 @@ fn create(machine: &mut Machine) -> ControlFlow {
             let code_vec = u256_to_vec_u8_without_padding(code);
 
             machine
-                .environment
+                .context
                 .state
                 .add_or_update_account(address, value, code_vec);
         }
         None => {
             machine
-                .environment
+                .context
                 .state
                 .add_or_update_account(address, value, Vec::new());
         }
@@ -1026,7 +1026,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     let data = machine.memory.get(args_offset, args_size);
 
-    let code = machine.environment.state.get_account_code(address);
+    let code = machine.context.state.get_account_code(address);
 
 
     // TODO: use trait for this
@@ -1037,14 +1037,14 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     let res = evm(
         code,
-        Environment::new(
+        Context::new(
             address,
-            machine.environment.address,
-            machine.environment.origin,
-            machine.environment.gasprice,
+            machine.context.address,
+            machine.context.origin,
+            machine.context.gasprice,
             U256::from_big_endian(&value_bytes),
             &data_string,
-            machine.environment.state.clone(),
+            machine.context.state.clone(),
             false,
         ),
         machine.block,
@@ -1064,7 +1064,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
     };
 
     if res.success {
-        machine.environment.state = res.state;
+        machine.context.state = res.state;
         machine.stack.push(1.into());
     } else {
         machine.stack.push(0.into());
@@ -1093,21 +1093,21 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
 
     let data = machine.memory.get(args_offset, args_size);
 
-    let code = machine.environment.state.get_account_code(address);
+    let code = machine.context.state.get_account_code(address);
 
 
     let data_string = hex::encode(data);
 
     let res = evm(
         code,
-        Environment::new(
-            machine.environment.address,
-            machine.environment.caller,
-            machine.environment.origin,
-            machine.environment.gasprice,
-            machine.environment.value,
+        Context::new(
+            machine.context.address,
+            machine.context.caller,
+            machine.context.origin,
+            machine.context.gasprice,
+            machine.context.value,
             &data_string,
-            machine.environment.state.clone(),
+            machine.context.state.clone(),
             false,
         ),
         machine.block,
@@ -1127,7 +1127,7 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
     };
 
     if res.success {
-        machine.environment.state = res.state;
+        machine.context.state = res.state;
         machine.stack.push(1.into());
     } else {
         machine.stack.push(0.into());
@@ -1148,20 +1148,20 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
 
     let data = machine.memory.get(args_offset, args_size);
 
-    let code = machine.environment.state.get_account_code(address);
+    let code = machine.context.state.get_account_code(address);
 
     let data_string = hex::encode(data);
 
     let res = evm(
         code,
-        Environment::new(
+        Context::new(
             address,
-            machine.environment.address,
-            machine.environment.origin,
-            machine.environment.gasprice,
+            machine.context.address,
+            machine.context.origin,
+            machine.context.gasprice,
             0.into(),
             &data_string,
-            machine.environment.state.clone(),
+            machine.context.state.clone(),
             true,
         ),
         machine.block,
@@ -1181,7 +1181,7 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
     };
 
     if res.success {
-        machine.environment.state = res.state;
+        machine.context.state = res.state;
         machine.stack.push(1.into());
     } else {
         machine.stack.push(0.into());
@@ -1207,14 +1207,14 @@ fn selfdestruct(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap();
 
     let balance = machine
-        .environment
+        .context
         .state
-        .destruct_account(machine.environment.address);
+        .destruct_account(machine.context.address);
 
     machine
-        .environment
+        .context
         .state
-        .increment_balance(address.to_h160(), balance + machine.environment.value);
+        .increment_balance(address.to_h160(), balance + machine.context.value);
 
     ControlFlow::Continue(1)
 }

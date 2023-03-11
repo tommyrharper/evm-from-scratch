@@ -1,8 +1,7 @@
 use primitive_types::{U256, H160};
 use crate::state::State;
 
-// TODO: update ot be called Context??
-pub struct Environment<'a> {
+pub struct Context<'a> {
     pub address: H160,
     pub caller: H160,
     pub origin: H160,
@@ -15,13 +14,15 @@ pub struct Environment<'a> {
     pub is_static: bool,
 }
 
-impl<'a> Environment<'a> {
+// TODO: remove lifetime parameter where possible
+impl<'a> Context<'a> {
     pub fn new(
         address: H160,
         caller: H160,
         origin: H160,
         gasprice: U256,
         value: U256,
+        // TODO: update data to call_data and store as hex not string
         data: &'a String,
         state: State,
         is_static: bool,
