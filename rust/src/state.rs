@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use primitive_types::U256;
+use primitive_types::{U256, H160};
 
 #[derive(Debug, Clone)]
 pub struct Account {
@@ -17,47 +17,44 @@ impl Account {
 // TODO: update to_string to to_owned across codebase where possible
 // TODO: Update String to H160
 #[derive(Clone)]
-pub struct State(pub HashMap<String, Account>);
+pub struct State(pub HashMap<H160, Account>);
 
 impl State {
     pub fn new() -> Self {
-        let map = HashMap::<String, Account>::new();
+        let map = HashMap::<H160, Account>::new();
         Self(map)
     }
 
-    pub fn add_accounts(&mut self, address_balances: &Vec<(String, Vec<u8>, Vec<u8>)>) {
+    pub fn add_accounts(&mut self, address_balances: &Vec<(H160, Vec<u8>, Vec<u8>)>) {
         for (address, balance, code) in address_balances {
             self.add_account(
-                address.to_owned(),
+                *address,
                 U256::from_big_endian(balance),
                 code.clone(),
             );
         }
     }
 
-    pub fn add_account(&mut self, address: String, balance: U256, code: Vec<u8>) {
+    pub fn add_account(&mut self, address: H160, balance: U256, code: Vec<u8>) {
         self.0.insert(address, Account::new(balance, code));
     }
 
-    pub fn destruct_account(&mut self, address: U256) -> U256 {
+    pub fn destruct_account(&mut self, address: H160) -> U256 {
         // TODO: remove double query to account balance
         let balance = self.get_account_balance(address);
-        let address_string = format! {"{:X}", address};
-        self.0.remove(&address_string);
+        self.0.remove(&address);
         balance
     }
 
-    pub fn add_or_update_account(&mut self, address: U256, balance: U256, code: Vec<u8>) {
+    pub fn add_or_update_account(&mut self, address: H160, balance: U256, code: Vec<u8>) {
         let prev_balance = self.get_account_balance(address);
         let new_balance = balance + prev_balance;
-        let address_string = format! {"{:X}", address};
 
-        self.0.insert(address_string, Account::new(new_balance, code));
+        self.0.insert(address, Account::new(new_balance, code));
     }
 
-    pub fn get_account_code(&self, address: U256) -> Vec<u8> {
-        let address_string = format! {"{:X}", address};
-        let balance = self.0.get(&address_string);
+    pub fn get_account_code(&self, address: H160) -> Vec<u8> {
+        let balance = self.0.get(&address);
 
         match balance {
             Some(account) => account.code.clone(),
@@ -65,9 +62,8 @@ impl State {
         }
     }
 
-    pub fn get_account_balance(&self, address: U256) -> U256 {
-        let address_string = format! {"{:X}", address};
-        let account = self.0.get(&address_string);
+    pub fn get_account_balance(&self, address: H160) -> U256 {
+        let account = self.0.get(&address);
 
         match account {
             Some(account) => account.balance,
@@ -75,23 +71,21 @@ impl State {
         }
     }
 
-    pub fn get_account(&self, address: U256) -> Option<&Account> {
-        let address_string = format! {"{:X}", address};
-        let account = self.0.get(&address_string);
+    pub fn get_account(&self, address: H160) -> Option<&Account> {
+        let account = self.0.get(&address);
 
         account
     }
 
-    pub fn increment_balance(&mut self, address: U256, extra: U256) {
+    pub fn increment_balance(&mut self, address: H160, extra: U256) {
         let account = self.get_account(address);
-        let address_string = format! {"{:X}", address};
         match account {
             Some(account) => {
                 let new_balance = account.balance + extra;
-                self.add_account(address_string, new_balance, account.code.clone())
+                self.add_account(address, new_balance, account.code.clone())
             }
             None => {
-                self.add_account(address_string, extra, Vec::new())
+                self.add_account(address, extra, Vec::new())
             }
         }
     }

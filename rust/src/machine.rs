@@ -7,7 +7,7 @@ use crate::jump_map::JumpMap;
 use crate::memory::Memory;
 use crate::stack::Stack;
 use crate::state::State;
-use primitive_types::U256;
+use primitive_types::{U256, H160};
 
 pub enum ControlFlow {
     Continue(usize),
@@ -56,9 +56,10 @@ pub struct Log {
 }
 
 impl Log {
-    pub fn new(address: &[u8], data: &[u8]) -> Self {
+    pub fn new(address: H160, data: &[u8]) -> Self {
         Self {
-            address: hex::encode(address),
+            address: address.to_string(),
+            // address: hex::encode(address),
             data: hex::encode(data),
             topics: Vec::new(),
         }
@@ -70,6 +71,7 @@ impl Log {
 
         let topic_string = hex::encode(bytes);
 
+        // TODO: check if this can be done using H160 or similar, maybe H256
         let mut prepended_topic: String = "0x".to_owned();
         prepended_topic.push_str(&topic_string);
 

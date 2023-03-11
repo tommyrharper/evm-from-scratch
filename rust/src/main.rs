@@ -1,10 +1,11 @@
-use std::collections::HashMap;
-use evm::block::Block;
+use evm::helpers::{hex_decode_with_prefix, Convert};
+use evm::{block::Block, helpers::add_padding};
 use evm::environment::Environment;
 use evm::evm;
 use evm::state::State;
-use primitive_types::U256;
+use primitive_types::{H160, U256};
 use serde::Deserialize;
+use std::{collections::HashMap, str::FromStr};
 
 #[derive(Debug, Deserialize)]
 struct Evmtest {
@@ -48,12 +49,12 @@ impl StateData {
     }
 
     // TODO: clean up mess
-    pub fn account_data(&self) -> Vec<(String, Vec<u8>, Vec<u8>)> {
+    pub fn account_data(&self) -> Vec<(H160, Vec<u8>, Vec<u8>)> {
         self.0
             .iter()
             .map(|(address, account_data)| {
                 (
-                    address[2..].to_string().to_uppercase(),
+                    H160::from_str(address).unwrap(),
                     account_data.hex_decode_balance(),
                     account_data.hex_decode_code(),
                 )
@@ -117,21 +118,6 @@ struct Log {
     topics: Option<Vec<String>>,
 }
 
-pub fn hex_decode_with_prefix(data: &String) -> Vec<u8> {
-    let slice = if data.contains('x') {
-        &data[2..]
-    } else {
-        &data[..]
-    };
-
-    let mut res = String::new();
-    if slice.len() % 2 == 1 {
-        res.push('0');
-    }
-    res.push_str(slice);
-    hex::decode(res).unwrap()
-}
-
 fn main() {
     let text = std::fs::read_to_string("../evm.json").unwrap();
     let data: Vec<Evmtest> = serde_json::from_str(&text).unwrap();
@@ -146,24 +132,24 @@ fn main() {
         // TODO: update to use macro here
         let address = match &test.tx {
             Some(tx) => match &tx.to {
-                Some(to) => hex_decode_with_prefix(to),
-                None => vec![],
+                Some(to) => to.to_h160(),
+                None => H160::zero(),
             },
-            None => vec![],
+            None => H160::zero(),
         };
         let caller = match &test.tx {
             Some(tx) => match &tx.from {
-                Some(from) => hex_decode_with_prefix(from),
-                None => vec![],
+                Some(from) => from.to_h160(),
+                None => H160::zero(),
             },
-            None => vec![],
+            None => H160::zero(),
         };
-        let origin = match &test.tx {
+        let origin: H160 = match &test.tx {
             Some(tx) => match &tx.origin {
-                Some(origin) => hex_decode_with_prefix(origin),
-                None => vec![],
+                Some(origin) => origin.to_h160(),
+                None => H160::zero(),
             },
-            None => vec![],
+            None => H160::zero(),
         };
         let gasprice = match &test.tx {
             Some(tx) => match &tx.gasprice {
@@ -249,9 +235,9 @@ fn main() {
         let result = evm(
             &code,
             Environment::new(
-                &address,
-                &caller,
-                &origin,
+                address,
+                caller,
+                origin,
                 &gasprice,
                 U256::from_big_endian(&value),
                 &data,

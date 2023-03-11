@@ -2,7 +2,7 @@ pub mod block;
 mod consts;
 pub mod environment;
 mod eval;
-mod helpers;
+pub mod helpers;
 mod jump_map;
 mod machine;
 mod memory;

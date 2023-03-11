@@ -3,7 +3,7 @@ use crate::environment::Environment;
 use crate::machine::{ControlFlow, EvmError, ExitSuccess, Log, Machine};
 use crate::opcode::Opcode;
 use crate::{evm, helpers::*};
-use primitive_types::U256;
+use primitive_types::{U256};
 use sha3::{Digest, Keccak256};
 
 pub fn eval(machine: &mut Machine) -> ControlFlow {
@@ -542,13 +542,13 @@ fn keccak256(machine: &mut Machine) -> ControlFlow {
 fn address(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(U256::from_big_endian(machine.environment.address));
+        .push(machine.environment.address.to_u256());
 
     ControlFlow::Continue(1)
 }
 
 fn balance(machine: &mut Machine) -> ControlFlow {
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
     let balance = machine.environment.state.get_account_balance(address);
 
     machine.stack.push(balance);
@@ -559,7 +559,7 @@ fn balance(machine: &mut Machine) -> ControlFlow {
 fn origin(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(U256::from_big_endian(machine.environment.origin));
+        .push(machine.environment.origin.to_u256());
 
     ControlFlow::Continue(1)
 }
@@ -567,7 +567,7 @@ fn origin(machine: &mut Machine) -> ControlFlow {
 fn caller(machine: &mut Machine) -> ControlFlow {
     machine
         .stack
-        .push(U256::from_big_endian(machine.environment.caller));
+        .push(machine.environment.caller.to_u256());
 
     ControlFlow::Continue(1)
 }
@@ -646,7 +646,7 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
 }
 
 fn extcodesize(machine: &mut Machine) -> ControlFlow {
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
 
     let code = machine.environment.state.get_account_code(address);
 
@@ -656,7 +656,7 @@ fn extcodesize(machine: &mut Machine) -> ControlFlow {
 }
 
 fn extcodecopy(machine: &mut Machine) -> ControlFlow {
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
     let dest_offset = machine.stack.pop().unwrap().as_usize();
     let offset = machine.stack.pop().unwrap().as_usize();
     let size = machine.stack.pop().unwrap().as_usize();
@@ -670,7 +670,7 @@ fn extcodecopy(machine: &mut Machine) -> ControlFlow {
 }
 
 fn extcodehash(machine: &mut Machine) -> ControlFlow {
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
 
     let account_code = machine.environment.state.get_account_code(address);
     if account_code.len() == 0 {
@@ -754,7 +754,7 @@ fn selfbalance(machine: &mut Machine) -> ControlFlow {
     let balance = machine
         .environment
         .state
-        .get_account_balance(U256::from_big_endian(address));
+        .get_account_balance(address);
 
     machine.stack.push(balance);
 
@@ -955,7 +955,6 @@ fn create(machine: &mut Machine) -> ControlFlow {
     let initialisation_code = machine.memory.get(offset, size);
 
     let address = create_address(machine.environment.address, 0.into());
-    let address_u256 = U256::from_big_endian(address.as_bytes());
 
     let mut value_bytes: [u8; 32] = [0; 32];
     U256::to_big_endian(&value, &mut value_bytes);
@@ -963,7 +962,7 @@ fn create(machine: &mut Machine) -> ControlFlow {
     let res = evm(
         initialisation_code,
         Environment::new(
-            address.as_bytes(),
+            address,
             machine.environment.address,
             machine.environment.origin,
             machine.environment.gasprice,
@@ -998,19 +997,19 @@ fn create(machine: &mut Machine) -> ControlFlow {
             machine
                 .environment
                 .state
-                .add_or_update_account(address_u256, value, code_vec);
+                .add_or_update_account(address, value, code_vec);
         }
         None => {
             machine
                 .environment
                 .state
-                .add_or_update_account(address_u256, value, Vec::new());
+                .add_or_update_account(address, value, Vec::new());
         }
     }
 
     // UPDATE STATE
 
-    machine.stack.push(address_u256);
+    machine.stack.push(address.to_u256());
 
     ControlFlow::Continue(1)
 }
@@ -1018,7 +1017,7 @@ fn create(machine: &mut Machine) -> ControlFlow {
 fn call(machine: &mut Machine) -> ControlFlow {
     // TODO: handle gas
     let _gas = machine.stack.pop().unwrap();
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
     let value = machine.stack.pop().unwrap();
     let args_offset = machine.stack.pop().unwrap().as_usize();
     let args_size = machine.stack.pop().unwrap().as_usize();
@@ -1029,9 +1028,8 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     let code = machine.environment.state.get_account_code(address);
 
-    let mut address_bytes: [u8; 32] = [0; 32];
-    U256::to_big_endian(&address, &mut address_bytes);
 
+    // TODO: use trait for this
     let mut value_bytes: [u8; 32] = [0; 32];
     U256::to_big_endian(&value, &mut value_bytes);
 
@@ -1040,7 +1038,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
     let res = evm(
         code,
         Environment::new(
-            &address_bytes[..],
+            address,
             machine.environment.address,
             machine.environment.origin,
             machine.environment.gasprice,
@@ -1087,7 +1085,7 @@ fn eval_return(machine: &mut Machine) -> ControlFlow {
 fn delegatecall(machine: &mut Machine) -> ControlFlow {
     // TODO: handle gas
     let _gas = machine.stack.pop().unwrap();
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
     let args_offset = machine.stack.pop().unwrap().as_usize();
     let args_size = machine.stack.pop().unwrap().as_usize();
     let ret_offset = machine.stack.pop().unwrap().as_usize();
@@ -1097,8 +1095,6 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
 
     let code = machine.environment.state.get_account_code(address);
 
-    let mut address_bytes: [u8; 32] = [0; 32];
-    U256::to_big_endian(&address, &mut address_bytes);
 
     let data_string = hex::encode(data);
 
@@ -1144,7 +1140,7 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
 fn staticcall(machine: &mut Machine) -> ControlFlow {
     // TODO: handle gas
     let _gas = machine.stack.pop().unwrap();
-    let address = machine.stack.pop().unwrap();
+    let address = machine.stack.pop().unwrap().to_h160();
     let args_offset = machine.stack.pop().unwrap().as_usize();
     let args_size = machine.stack.pop().unwrap().as_usize();
     let ret_offset = machine.stack.pop().unwrap().as_usize();
@@ -1154,15 +1150,12 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
 
     let code = machine.environment.state.get_account_code(address);
 
-    let mut address_bytes: [u8; 32] = [0; 32];
-    U256::to_big_endian(&address, &mut address_bytes);
-
     let data_string = hex::encode(data);
 
     let res = evm(
         code,
         Environment::new(
-            &address_bytes[..],
+            address,
             machine.environment.address,
             machine.environment.origin,
             machine.environment.gasprice,
@@ -1216,12 +1209,12 @@ fn selfdestruct(machine: &mut Machine) -> ControlFlow {
     let balance = machine
         .environment
         .state
-        .destruct_account(U256::from(machine.environment.address));
+        .destruct_account(machine.environment.address);
 
     machine
         .environment
         .state
-        .increment_balance(address, balance + machine.environment.value);
+        .increment_balance(address.to_h160(), balance + machine.environment.value);
 
     ControlFlow::Continue(1)
 }
