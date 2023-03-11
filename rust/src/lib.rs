@@ -8,6 +8,7 @@ mod machine;
 mod memory;
 mod opcode;
 mod stack;
+pub mod state;
 
 use std::collections::HashMap;
 use primitive_types::U256;

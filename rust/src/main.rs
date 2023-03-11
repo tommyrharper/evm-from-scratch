@@ -1,22 +1,8 @@
 use std::collections::HashMap;
-
 use evm::block::Block;
-use evm::environment::{Environment, State};
-/**
- * EVM From Scratch
- * Rust template
- *
- * To work on EVM From Scratch in Rust:
- *
- * - Install Rust: https://www.rust-lang.org/tools/install
- * - Edit `rust/lib.rs`
- * - Run `cd rust && cargo run` to run the tests
- *
- * Hint: most people who were trying to learn Rust and EVM at the same
- * gave up and switched to JavaScript, Python, or Go. If you are new
- * to Rust, implement EVM in another programming language first.
- */
+use evm::environment::Environment;
 use evm::evm;
+use evm::state::State;
 use primitive_types::U256;
 use serde::Deserialize;
 

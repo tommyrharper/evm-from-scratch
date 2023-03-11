@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
 use crate::block::Block;
-use crate::environment::{Environment, State};
+use crate::environment::Environment;
 use crate::eval::eval;
 use crate::jump_map::JumpMap;
 use crate::memory::Memory;
 use crate::stack::Stack;
+use crate::state::State;
 use primitive_types::U256;
 
 pub enum ControlFlow {
