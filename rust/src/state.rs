@@ -14,7 +14,6 @@ impl Account {
 }
 
 // TODO: Update to use BTreeMap
-// TODO: update to_string to to_owned across codebase where possible
 // TODO: Move out of context
 #[derive(Clone)]
 pub struct State(pub HashMap<H160, Account>);
@@ -40,10 +39,11 @@ impl State {
     }
 
     pub fn destruct_account(&mut self, address: H160) -> U256 {
-        // TODO: remove double query to account balance
-        let balance = self.get_account_balance(address);
-        self.0.remove(&address);
-        balance
+        let account = self.0.remove(&address);
+        match account {
+            Some(account) => account.balance,
+            None => 0.into()
+        }
     }
 
     pub fn add_or_update_account(&mut self, address: H160, balance: U256, code: Vec<u8>) {

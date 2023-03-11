@@ -58,7 +58,6 @@ impl Log {
     pub fn new(address: H160, data: &[u8]) -> Self {
         Self {
             address: address.to_string(),
-            // address: hex::encode(address),
             data: hex::encode(data),
             topics: Vec::new(),
         }
