@@ -49,8 +49,7 @@ impl StateData {
         Self(HashMap::new())
     }
 
-    // TODO: clean up mess
-    pub fn account_data(&self) -> Vec<(H160, Vec<u8>, Vec<u8>)> {
+    pub fn account_data_list(&self) -> Vec<(H160, Vec<u8>, Vec<u8>)> {
         self.0
             .iter()
             .map(|(address, account_data)| {
@@ -224,14 +223,14 @@ fn main() {
             None => vec![],
         };
 
-        let account_data = match &test.state {
-            Some(state) => state.account_data(),
-            None => StateData::new().account_data(),
+        let account_data_list = match &test.state {
+            Some(state) => state.account_data_list(),
+            None => StateData::new().account_data_list(),
         };
 
         let mut state: State = State::new();
 
-        state.add_accounts(&account_data);
+        state.add_accounts(&account_data_list);
 
         let result = evm(
             &code,
