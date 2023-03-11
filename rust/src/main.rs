@@ -160,10 +160,10 @@ fn main() {
         };
         let value = match &test.tx {
             Some(tx) => match &tx.value {
-                Some(value) => hex_decode_with_prefix(value),
-                None => vec![],
+                Some(value) => value.to_u256(),
+                None => U256::zero(),
             },
-            None => vec![],
+            None => U256::zero(),
         };
         let data = match &test.tx {
             Some(tx) => match &tx.data {
@@ -239,8 +239,7 @@ fn main() {
                 caller,
                 origin,
                 gasprice,
-                // TODO: remove conversion here
-                U256::from_big_endian(&value),
+                value,
                 &data,
                 state,
                 false,
