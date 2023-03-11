@@ -14,7 +14,6 @@ struct Evmtest {
     name: String,
     hint: String,
     code: Code,
-    // TODO: check if Option can be removed here
     tx: Option<Tx>,
     block: Option<BlockData>,
     state: Option<StateData>,
