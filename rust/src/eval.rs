@@ -85,8 +85,9 @@ pub fn eval(machine: &mut Machine) -> ControlFlow {
         Opcode::RETURN => eval_return(machine),
         Opcode::DELEGATECALL => delegatecall(machine),
         Opcode::STATICCALL => staticcall(machine),
-        Opcode::INVALID => invalid(machine),
         Opcode::REVERT => revert(machine),
+        Opcode::INVALID => invalid(machine),
+        Opcode::SELFDESTRUCT => selfdestruct(machine),
         _ => exit_error(EvmError::InvalidInstruction),
     }
 }
@@ -572,9 +573,7 @@ fn caller(machine: &mut Machine) -> ControlFlow {
 }
 
 fn callvalue(machine: &mut Machine) -> ControlFlow {
-    machine
-        .stack
-        .push(U256::from_big_endian(machine.environment.value));
+    machine.stack.push(machine.environment.value);
 
     ControlFlow::Continue(1)
 }
@@ -656,7 +655,6 @@ fn extcodesize(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
-// TODO: remove all println statements
 fn extcodecopy(machine: &mut Machine) -> ControlFlow {
     let address = machine.stack.pop().unwrap();
     let dest_offset = machine.stack.pop().unwrap().as_usize();
@@ -970,7 +968,7 @@ fn create(machine: &mut Machine) -> ControlFlow {
             machine.environment.origin,
             machine.environment.gasprice,
             // QUESTION??? should value be 0 at this point? And then just sent after?
-            &value_bytes[..],
+            U256::from_big_endian(&value_bytes),
             &String::new(),
             machine.environment.state.clone(),
             false,
@@ -983,6 +981,8 @@ fn create(machine: &mut Machine) -> ControlFlow {
         machine.stack.push(0.into());
         return ControlFlow::Continue(1);
     }
+
+    machine.environment.state = res.state;
 
     // code = return value of initialisation code
     match &res.return_val {
@@ -1044,7 +1044,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
             machine.environment.address,
             machine.environment.origin,
             machine.environment.gasprice,
-            &value_bytes[..],
+            U256::from_big_endian(&value_bytes),
             &data_string,
             machine.environment.state.clone(),
             false,
@@ -1066,6 +1066,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
     };
 
     if res.success {
+        machine.environment.state = res.state;
         machine.stack.push(1.into());
     } else {
         machine.stack.push(0.into());
@@ -1130,6 +1131,7 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
     };
 
     if res.success {
+        machine.environment.state = res.state;
         machine.stack.push(1.into());
     } else {
         machine.stack.push(0.into());
@@ -1164,7 +1166,7 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
             machine.environment.address,
             machine.environment.origin,
             machine.environment.gasprice,
-            &[0],
+            0.into(),
             &data_string,
             machine.environment.state.clone(),
             true,
@@ -1186,6 +1188,7 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
     };
 
     if res.success {
+        machine.environment.state = res.state;
         machine.stack.push(1.into());
     } else {
         machine.stack.push(0.into());
@@ -1205,4 +1208,20 @@ fn revert(machine: &mut Machine) -> ControlFlow {
 
 fn invalid(_machine: &mut Machine) -> ControlFlow {
     exit_error(EvmError::InvalidInstruction)
+}
+
+fn selfdestruct(machine: &mut Machine) -> ControlFlow {
+    let address = machine.stack.pop().unwrap();
+
+    let balance = machine
+        .environment
+        .state
+        .destruct_account(U256::from(machine.environment.address));
+
+    machine
+        .environment
+        .state
+        .increment_balance(address, balance + machine.environment.value);
+
+    ControlFlow::Continue(1)
 }

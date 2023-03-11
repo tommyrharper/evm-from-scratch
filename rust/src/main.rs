@@ -263,7 +263,14 @@ fn main() {
         let result = evm(
             &code,
             Environment::new(
-                &address, &caller, &origin, &gasprice, &value, &data, state, false,
+                &address,
+                &caller,
+                &origin,
+                &gasprice,
+                U256::from_big_endian(&value),
+                &data,
+                state,
+                false,
             ),
             Block::new(
                 &coinbase,

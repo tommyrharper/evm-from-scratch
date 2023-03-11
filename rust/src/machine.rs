@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::block::Block;
-use crate::environment::Environment;
+use crate::environment::{Environment, State};
 use crate::eval::eval;
 use crate::jump_map::JumpMap;
 use crate::memory::Memory;
@@ -30,7 +30,7 @@ pub enum EvmError {
     InvalidInstruction,
     InvalidJump,
     Revert(U256),
-    OpcodeNotStatic(u8)
+    OpcodeNotStatic(u8),
 }
 
 enum EvmStatus {
@@ -43,6 +43,7 @@ pub struct EvmResult {
     pub success: bool,
     pub error: Option<EvmError>,
     pub logs: Vec<Log>,
+    pub state: State,
     pub return_val: Option<U256>,
 }
 
@@ -144,6 +145,7 @@ impl<'a> Machine<'a> {
                                 success: true,
                                 error: None,
                                 logs: self.logs.clone(),
+                                state: self.environment.state.clone(),
                                 return_val: Some(val),
                             }
                         }
@@ -154,6 +156,7 @@ impl<'a> Machine<'a> {
                             success: false,
                             error: Some(error),
                             logs: self.logs.clone(),
+                            state: self.environment.state.clone(),
                             return_val: match &error {
                                 EvmError::Revert(val) => Some(*val),
                                 _ => None,
@@ -169,6 +172,7 @@ impl<'a> Machine<'a> {
             success: true,
             error: None,
             logs: self.logs.clone(),
+            state: self.environment.state.clone(),
             return_val: None,
         };
     }
