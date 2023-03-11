@@ -2,14 +2,11 @@ use primitive_types::{U256, H160};
 use crate::state::State;
 
 // TODO: update ot be called Context??
-// TODO: update addresses to be H160
 pub struct Environment<'a> {
-    // TODO: update to U256???
     pub address: H160,
     pub caller: H160,
     pub origin: H160,
-    // TODO: update to U256
-    pub gasprice: &'a [u8],
+    pub gasprice: U256,
     // TODO: update to U256, handle overlap with State.Account.balance -> maybe not
     pub value: U256,
     // TODO: update this to be call_data for clarity
@@ -23,7 +20,7 @@ impl<'a> Environment<'a> {
         address: H160,
         caller: H160,
         origin: H160,
-        gasprice: &'a [u8],
+        gasprice: U256,
         value: U256,
         data: &'a String,
         state: State,

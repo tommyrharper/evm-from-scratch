@@ -1,8 +1,8 @@
-use evm::helpers::{hex_decode_with_prefix, Convert};
-use evm::{block::Block, helpers::add_padding};
 use evm::environment::Environment;
 use evm::evm;
+use evm::helpers::{hex_decode_with_prefix, Convert};
 use evm::state::State;
+use evm::{block::Block, helpers::add_padding};
 use primitive_types::{H160, U256};
 use serde::Deserialize;
 use std::{collections::HashMap, str::FromStr};
@@ -153,10 +153,10 @@ fn main() {
         };
         let gasprice = match &test.tx {
             Some(tx) => match &tx.gasprice {
-                Some(gasprice) => hex_decode_with_prefix(gasprice),
-                None => vec![],
+                Some(gasprice) => gasprice.to_u256(),
+                None => U256::zero(),
             },
-            None => vec![],
+            None => U256::zero(),
         };
         let value = match &test.tx {
             Some(tx) => match &tx.value {
@@ -238,7 +238,8 @@ fn main() {
                 address,
                 caller,
                 origin,
-                &gasprice,
+                gasprice,
+                // TODO: remove conversion here
                 U256::from_big_endian(&value),
                 &data,
                 state,

@@ -640,7 +640,7 @@ fn gasprice(machine: &mut Machine) -> ControlFlow {
     // TODO: implement gas price properly
     machine
         .stack
-        .push(U256::from_big_endian(machine.environment.gasprice));
+        .push(machine.environment.gasprice);
 
     ControlFlow::Continue(1)
 }
