@@ -992,7 +992,7 @@ fn create(machine: &mut Machine) -> ControlFlow {
             U256::to_big_endian(code, &mut code_bytes);
 
             // This could cut off an (unlikely) initial stop opcode. Update return_val to be a Vec<u8>
-            let code_vec = u256_to_vec_u8_without_padding(code);
+            let code_vec = code.to_vec_u8_without_padding();
 
             machine
                 .context
@@ -1064,7 +1064,7 @@ fn call(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
-            let return_val_without_padding = u256_to_vec_u8_without_padding(value);
+            let return_val_without_padding = value.to_vec_u8_without_padding();
 
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;
@@ -1127,7 +1127,7 @@ fn delegatecall(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
-            let return_val_without_padding = u256_to_vec_u8_without_padding(value);
+            let return_val_without_padding = value.to_vec_u8_without_padding();
 
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;
@@ -1181,7 +1181,7 @@ fn staticcall(machine: &mut Machine) -> ControlFlow {
 
     match &res.return_val {
         Some(value) => {
-            let return_val_without_padding = u256_to_vec_u8_without_padding(value);
+            let return_val_without_padding = value.to_vec_u8_without_padding();
 
             machine.memory.set(ret_offset, *value, ret_size);
             machine.return_data_buffer = return_val_without_padding;

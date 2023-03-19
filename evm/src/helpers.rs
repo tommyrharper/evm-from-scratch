@@ -10,6 +10,10 @@ pub trait Convert {
     fn to_u256(&self) -> U256;
 }
 
+pub trait ToBytes {
+    fn to_vec_u8_without_padding(&self) -> Vec<u8>;
+}
+
 // TODO: update to use into
 impl Convert for U256 {
     fn to_h160(&self) -> H160 {
@@ -19,6 +23,15 @@ impl Convert for U256 {
     }
     fn to_u256(&self) -> U256 {
         *self
+    }
+}
+
+impl ToBytes for U256 {
+    fn to_vec_u8_without_padding(&self) -> Vec<u8> {
+        let mut return_val_bytes: [u8; 32] = [0; 32];
+        U256::to_big_endian(&self, &mut return_val_bytes);
+        let return_val_without_padding: Vec<u8> = remove_padding(&return_val_bytes);
+        return_val_without_padding
     }
 }
 
@@ -61,14 +74,6 @@ pub fn hex_decode_with_prefix(data: &String) -> Vec<u8> {
 
 pub fn remove_padding(list: &[u8]) -> Vec<u8> {
     list.to_vec().into_iter().skip_while(|x| *x == 0).collect()
-}
-
-// TODO: tidy this up
-pub fn u256_to_vec_u8_without_padding(value: &U256) -> Vec<u8> {
-    let mut return_val_bytes: [u8; 32] = [0; 32];
-    U256::to_big_endian(value, &mut return_val_bytes);
-    let return_val_without_padding: Vec<u8> = remove_padding(&return_val_bytes);
-    return_val_without_padding
 }
 
 pub fn create_address(caller: H160, nonce: U256) -> H160 {
