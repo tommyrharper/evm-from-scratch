@@ -1014,6 +1014,17 @@ fn create(machine: &mut Machine) -> ControlFlow {
     ControlFlow::Continue(1)
 }
 
+// enum CallType {
+//     CALL,
+//     DELEGATECALL,
+//     STATICCALL,
+//     CREATE
+// }
+
+// fn message_call (machine: &mut Machine, call_type: CallType) -> ControlFlow {
+//     ControlFlow::Continue(1)
+// }
+
 fn call(machine: &mut Machine) -> ControlFlow {
     // TODO: handle gas
     let _gas = machine.stack.pop().unwrap();
